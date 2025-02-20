@@ -1,2 +1,2 @@
-*.o
-gvzork
+.vscode/*
+!.vscode/settings.json
