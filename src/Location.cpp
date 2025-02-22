@@ -1,15 +1,21 @@
 #include "Location.h"
+#include <stdexcept>
 
 // Constructor for the Location class
 Location::Location(std::string name, std::string description) {
     // Check if the name or description is empty and throw an exception if they are
-    if (name.empty() || description.empty()) {
-        throw std::invalid_argument("Location name and description cannot be empty.");
+    if (name.empty()) {
+        throw std::invalid_argument("Location name cannot be empty.");
+    }
+    if (description.empty()) {
+        throw std::invalid_argument("Location description cannot be empty.");
     }
     this->name = name;
     this->description = description;
+    this->visited = false;
 }
 
+    
 std::string Location::get_name() const {
     return name;
 }
@@ -18,25 +24,25 @@ std::string Location::get_description() const {
     return description;
 }
 
-std::vector<Item> Location::get_items() const { 
+std::vector<Item> Location::get_items() const {
     return items;
 }
 
-std::vector<NPC> Location::get_npcs() const { 
+std::vector<NPC> Location::get_npcs() const {
     return npcs;
 }
 
-// add an NPC 
+// Add an NPC to the location
 void Location::add_npc(NPC npc) {
     npcs.push_back(npc);
 }
 
-// add an item
+// Add an item to the location
 void Location::add_item(Item item) {
     items.push_back(item);
 }
 
-// add a neighboring location 
+// Add a neighboring location
 void Location::add_location(std::string direction, Location* location) {
     // Check if direction is empty or already exists and throw an exception if it is
     if (direction.empty() || neighbors.count(direction)) {
@@ -48,4 +54,37 @@ void Location::add_location(std::string direction, Location* location) {
 
 std::map<std::string, Location*> Location::get_locations() const {
     return neighbors;
+}
+
+// Mark visited
+void Location::set_visited() {
+    visited = true;
+}
+
+// Check if visited
+bool Location::get_visited() const {
+    return visited;
+}
+
+// Overloaded stream operator to format location details
+std::ostream& operator<<(std::ostream& os, const Location& location) {
+    os << location.name << " - " << location.description << "\n";
+    
+    os << "You see the following NPCs:\n";
+    for (const auto& npc : location.npcs) {
+        os << "- " << npc.get_name() << "\n";
+    }
+    
+    os << "You see the following Items:\n";
+    for (const auto& item : location.items) {
+        os << "- " << item << "\n";
+    }
+    
+    //CHATGPT ASSISTED
+    os << "You can go in the following Directions:\n";
+    for (const auto& pair : location.neighbors) {
+        std::string status = pair.second->get_visited() ? pair.second->get_name() + " (Visited)" : "Unknown";
+        os << "- " << pair.first << " - " << status << "\n";
+    }
+    return os;
 }

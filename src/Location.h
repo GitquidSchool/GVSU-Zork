@@ -6,15 +6,19 @@
 #include <map>
 #include "Item.h"
 #include "NPC.h"
+#include <iostream>
 
 class Location {
+    //  variables stored in the Location class:
 private:
     std::string name;
     std::string description;
-    std::map<std::string, Location*> neighbors; // Direction -> Location
+    std::map<std::string, Location*> neighbors;
     std::vector<Item> items;
     std::vector<NPC> npcs;
+    bool visited;
 
+    //  access to the variables 
 public:
     Location(std::string name, std::string description);
     std::string get_name() const;
@@ -25,8 +29,12 @@ public:
     void add_npc(NPC npc);
     void add_item(Item item);
     void add_location(std::string direction, Location* location);
-
     std::map<std::string, Location*> get_locations() const;
+
+    void set_visited();
+    bool get_visited() const;
+
+    friend std::ostream& operator<<(std::ostream& os, const Location& location);
 };
 
 #endif
