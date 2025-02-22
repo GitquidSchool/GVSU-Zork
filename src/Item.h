@@ -15,9 +15,11 @@ private:
 public:
     // Constructor to initialize an Item with its name, description, calories, and weight
     // Throws exceptions if any argument is invalid
-    Item(const std::string &name, const std::string &description,
-         int calories, float weight);
-
+    Item(const std::string &name,
+         const std::string &description,
+         int calories,
+         float weight);
+    
     std::string get_name() const;   
     std::string get_description() const; 
     int get_calories() const;      
@@ -27,5 +29,5 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Item& item);
 };
 
-#endif  
+#endif
 
