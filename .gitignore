@@ -1,2 +1,15 @@
 .vscode/*
 !.vscode/settings.json
+
+# Ignore compiled executable
+game.exe
+
+# Ignore object files
+*.o
+
+# Ignore temporary files
+*.tmp
+*.log
+
+# Ignore build directories
+/build/
