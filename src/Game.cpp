@@ -1,11 +1,29 @@
 #include "Game.h"
 #include <iostream>
+#include <ctime>
+#include <cstdlib>
+#include <sstream>
 
-Game::Game() {
-    setup_locations();
+Game::Game() : required_calories(500), in_progress(true) {
+        setup_commands();
+        create_world();
+    }
+
+void Game::setup_commands() {
+        commands["help"] = [this](std::vector<std::string> args) { show_help(args); };
+        commands["talk"] = [this](std::vector<std::string> args) { talk(args); };
+        commands["meet"] = [this](std::vector<std::string> args) { meet(args); };
+        commands["take"] = [this](std::vector<std::string> args) { take(args); };
+        commands["give"] = [this](std::vector<std::string> args) { give(args); };
+        commands["go"] = [this](std::vector<std::string> args) { go(args); };
+        commands["inventory"] = [this](std::vector<std::string> args) { show_items(args); };
+        commands["look"] = [this](std::vector<std::string> args) { look(args); };
+        commands["quit"] = [this](std::vector<std::string> args) { quit(args); };
+        commands["custom1"] = [this](std::vector<std::string> args) { custom_command_1(args); }; // Placeholder
+        commands["custom2"] = [this](std::vector<std::string> args) { custom_command_2(args); }; // Placeholder
 }
 
-void Game::setup_locations() {
+void Game::create_world() {
     // =============================
     // 1. Define Locations
     // =============================
@@ -117,7 +135,6 @@ void Game::setup_locations() {
     // =============================
     // 3. Define Items
     // =============================
-    Item item("", "", 45, 2.0);
     Item clearCup("Clear Plastic Cup", "A sturdy plastic cup with some residue left inside.", 0, 1.5); 
     Item energyBar("Energy Bar", "A small partially unwrapped protein bar left on a bleacher.", 25, 1.0); 
     Item pearSlice("Half-Eaten Pear Slice", "A single Pear slice with a bite taken out. It's starting to brown.", 10, 0.5);
@@ -250,11 +267,8 @@ void Game::setup_locations() {
     padnosHall->add_location("south", kirkoffCenter);
     padnosHall->add_location("east", theCommons);
 
-    kirkoffCenter->add_location("north", padnosHall);     
-
-    // =============================
-    // 6. Set Player's Starting Location
-    // =============================
+    kirkoffCenter->add_location("north", padnosHall);  
+    
     player.set_current_location(theForest);
 }
 
@@ -264,5 +278,24 @@ void Game::start() {
 }
 
 void Game::game_loop() {
-    std::cout << "Game loop is running..." << std::endl;
-}
+        while (in_progress) {
+            std::cout << "\n> ";
+            std::string input;
+            std::getline(std::cin, input);
+            
+            std::vector<std::string> tokens;
+            std::istringstream iss(input);
+            for (std::string s; iss >> s; ) tokens.push_back(s);
+    
+            if (tokens.empty()) continue;
+    
+            std::string command = tokens[0];
+            tokens.erase(tokens.begin());
+    
+            if (commands.find(command) != commands.end()) {
+                commands[command](tokens);
+            } else {
+                std::cout << "Invalid command. Type 'help' for available commands." << std::endl;
+            }
+        }
+    }

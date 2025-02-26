@@ -5,7 +5,7 @@
 Item::Item(const std::string &name, const std::string &description, int calories, float weight) {
     // Validate and assign attributes
     if (name.empty()) {
-        throw std::invalid_argument("Name cannot be empty");
+        throw std::invalid_argument("Item must have a name");
     }
     this->name = name;
 

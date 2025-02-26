@@ -42,18 +42,12 @@ void Location::add_item(Item item) {
     items.push_back(item);
 }
 
-// Add a neighboring location
 void Location::add_location(std::string direction, Location* location) {
-    // Check if direction is empty or already exists and throw an exception if it is
-    if (direction.empty() || neighbors.count(direction)) {
-        throw std::invalid_argument("Direction cannot be empty or already exists.");
+    if (direction.empty()) {
+        throw std::invalid_argument("Direction cannot be empty.");
     }
-    // Add neighboring location
-    neighbors[direction] = location;
-}
-
-std::map<std::string, Location*> Location::get_locations() const {
-    return neighbors;
+    // No longer checking for duplicate directions since multimap allows it
+    neighbors.insert({direction, location});
 }
 
 // Mark visited

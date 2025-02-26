@@ -13,7 +13,7 @@ class Location {
 private:
     std::string name;
     std::string description;
-    std::map<std::string, Location*> neighbors;
+    std::multimap<std::string, Location*> neighbors;
     std::vector<Item> items;
     std::vector<NPC> npcs;
     bool visited;
