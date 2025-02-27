@@ -11,7 +11,7 @@ Game::Game() : required_calories(500), in_progress(true) {
 
 void Game::setup_commands() {
         commands["help"] = [this](std::vector<std::string> args) { show_help(args); };
-        //commands["talk"] = [this](std::vector<std::string> args) { talk(args); };
+        commands["talk"] = [this](std::vector<std::string> args) { talk(args); };
         //commands["meet"] = [this](std::vector<std::string> args) { meet(args); };
         //commands["take"] = [this](std::vector<std::string> args) { take(args); };
         //commands["give"] = [this](std::vector<std::string> args) { give(args); };
@@ -24,19 +24,18 @@ void Game::setup_commands() {
 }
 
 void Game::show_help(std::vector<std::string>) {
-        // Get current time
-        std::time_t now = std::time(nullptr);
+        std::time_t current_time = std::time(nullptr); //gets time
         std::tm local_time;
-        localtime_s(&local_time, &now);
+        localtime_s(&local_time, &current_time);
 
         // format HH:MM and print 
         char time_str[6];  // 5 chars + null terminator
         std::strftime(time_str, sizeof(time_str), "%H:%M", &local_time);
-        std::cout << "Current Time: " << time_str << "\n";
+        std::cout << "Current Time: " << time_str << std::endl;
         
-        std::cout << "Available commands:\n";
-        for (const auto& cmd : commands) {
-            std::cout << "- " << cmd.first << "\n";
+        std::cout << "Available commands: " << std::endl;
+        for (const auto& command : commands) {
+            std::cout << "- " << command.first << std::endl;
         }
     }
 
@@ -90,10 +89,22 @@ void Game::take(std::vector<std::string> target) {
 
 
 
-    void Game::quit(std::vector<std::string>) {
+
+
+
+
+
+
+
+
+
+
+
+
+void Game::quit(std::vector<std::string>) {
         in_progress = false;
         std::cout << std::endl << "You have failed the elf and our school!" << std::endl;
-    }
+}
 
 void Game::create_world() {
     // =============================
@@ -372,3 +383,5 @@ void Game::game_loop() {
             }
         }
     }
+
+
