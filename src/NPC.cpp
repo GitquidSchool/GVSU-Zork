@@ -8,6 +8,10 @@ std::string NPC::get_name() const {
     return name;
 }
 
+std::string NPC::get_description() const {
+    return description;
+}
+
 // Returns next message in list of messages
 // If no messages, returns default
 std::string NPC::talk() {

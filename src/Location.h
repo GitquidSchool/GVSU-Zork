@@ -35,6 +35,8 @@ public:
     bool get_visited() const;
 
     friend std::ostream& operator<<(std::ostream& os, const Location& location);
+
+    NPC* find_npc(const std::string& name);
 };
 
 #endif

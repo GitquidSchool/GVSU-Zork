@@ -299,3 +299,59 @@ void Game::game_loop() {
             }
         }
     }
+
+void Game::show_help() {
+
+        // time and date method from google ai overview
+        std::time_t currentTime = std::time(nullptr); // gets time
+        std::tm* localTime = std::localtime(&currentTime); // sets to local time
+
+        int hour = localTime->tm_hour;
+        int min = localTime->tm_min;
+        int sec = localTime->tm_sec;
+
+        std::cout << "Current time: " << hour << ":" << min << ":" << sec << std::endl; // in 24 hour time
+        
+        std::cout << "Commands: " << std::endl;
+        for (const auto& command : commands) { // auto: automatically deduces type
+                std::cout << command.first << std::endl;
+        }
+}
+
+void Game::talk(std::vector<std::string> target) {
+        if (target.empty()) { // if npc name not provided
+                std::cout << "Who are you talking to?" << std::endl;
+                return;
+        } else {
+                Location* currentLocation = player.get_current_location(); // get current location
+
+                std::string npcName = target[0]; // get specified npc
+
+                NPC* npc = currentLocation->find_npc(npcName); // looks for npc in current location
+                if (npc) {
+                        std::string message = npc->talk();
+                        std::cout << npcName << " says: " << message << std::endl;
+                } else {
+                        std::cout << npcName << " is not in this location." << std::endl;
+                }
+        }
+}
+
+void Game::meet(std::vector<std::string> target) {
+        if (target.empty()) { // if npc name not provided
+                std::cout << "That person isnt here." << std::endl;
+                return;
+        } else {
+                Location* currentLocation = player.get_current_location(); // get current location
+                std::string npcName = target[0]; // get specified npc
+                NPC* npc = currentLocation->find_npc(npcName); // looks for npc in current location
+                if (npc) {
+                        std::cout << "You meet" << npcName << ": " << npc->get_description() << std::endl;
+                }
+        }
+        
+}
+
+// void Game::take(std::vector<std::string> target) {
+
+// }

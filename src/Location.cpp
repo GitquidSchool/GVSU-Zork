@@ -82,3 +82,13 @@ std::ostream& operator<<(std::ostream& os, const Location& location) {
     }
     return os;
 }
+
+// finds Npcs in current location
+NPC* Location::find_npc(const std::string& name) {
+    for (auto& npc : npcs) {
+        if (npc.get_name() == name) {
+            return &npc;
+        }
+    }
+    return nullptr; // no npc found
+}
