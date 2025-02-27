@@ -25,3 +25,7 @@ void Player::show_inventory() const {
         std::cout << "- " << item << std::endl;
     }
 }
+
+void Player::add_weight(float weight) {
+    carried_weight += weight;
+}

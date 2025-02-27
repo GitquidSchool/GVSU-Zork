@@ -74,15 +74,20 @@ void Game::meet(std::vector<std::string> target) {
 }
 
 void Game::take(std::vector<std::string> target) {
-        if (target.empty()){
+        if (target.empty()){ // if item name not provided
                 std::cout << "That item isnt here." << std::endl;
                 return;
         } else {
-                Location* current_location = player.get_current_location();
-                std::string item_name = target[0];
-                Item* item = current_location->find_item(item_name);
+                Location* current_location = player.get_current_location(); // get current location
+                std::string item_name = target[0]; // get specified item
+                Item* item = current_location->find_item(item_name); // looks for item in current location
                 if (item) {
-                        return;
+                        current_location->remove_item(item_name); // remove from current location
+                        player.add_item_to_inventory(*item); // adds item to player inventory
+                        player.add_weight(item->get_weight()); // adds weight to player
+                        std::cout << "You took the " << item_name << "." << std::endl;
+                } else {
+                        std::cout << item_name << " is not in this location." << std::endl;
                 }
         }
 }

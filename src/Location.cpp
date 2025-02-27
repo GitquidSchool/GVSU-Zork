@@ -95,10 +95,21 @@ NPC* Location::find_npc(const std::string& name) {
 
 // finds items in current location
 Item* Location::find_item(const std::string& name) {
-    for (auto& item : items) {
+    for (auto& item : items) { // iterate through location inventory by refrences
         if (item.get_name() == name) {
             return &item;
         }
     }
     return nullptr; // no item found
+}
+
+// removes item from current location
+void Location::remove_item(const std::string& name) {
+    for (auto item = items.begin(); item != items.end();) { // iterate through location inventory
+        if (item->get_name() == name ) {
+            item = items.erase(item);
+        } else {
+            ++item;
+        }
+    }
 }
