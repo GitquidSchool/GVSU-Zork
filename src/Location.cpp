@@ -28,12 +28,12 @@ std::vector<Item> Location::get_items() const {
     return items;
 }
 
-std::vector<NPC> Location::get_npcs() const {
+std::vector<NPC*> Location::get_npcs() const {
     return npcs;
 }
 
 // Add an NPC to the location
-void Location::add_npc(NPC npc) {
+void Location::add_npc(NPC* npc) {
     npcs.push_back(npc);
 }
 
@@ -70,7 +70,7 @@ std::ostream& operator<<(std::ostream& os, const Location& location) {
     } else {
         os << "You see the following NPCs:\n";
         for (const auto& npc : location.npcs) {
-            os << "- " << npc.get_name() << std::endl;
+            os << "- " << npc->get_name() << std::endl;
         }
         std::cout << std::endl;
     }
@@ -102,9 +102,9 @@ std::ostream& operator<<(std::ostream& os, const Location& location) {
 
 // finds Npcs in current location
 NPC* Location::find_npc(const std::string& name) {
-    for (auto& npc : npcs) {
-        if (npc.get_name().find(name) != std::string::npos) { 
-            return &npc; // Returns NPC if input name found within full name
+    for (auto* npc : npcs) {
+        if (npc->get_name().find(name) != std::string::npos) { 
+            return npc; // Returns NPC if input name found within full name
         }
     }
     return nullptr; // no npc found

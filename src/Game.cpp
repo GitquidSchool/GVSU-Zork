@@ -46,23 +46,36 @@ void Game::show_help(std::vector<std::string>) {
         }
 }
 
-    void Game::talk(std::vector<std::string> target) {
+void Game::talk(std::vector<std::string> target) {
         if (target.empty()) { // if npc name not provided
                 std::cout << "Who are you talking to?" << std::endl;
                 return;
-        } else {
-                Location* current_location = player.get_current_location(); // get current location
-
-                std::string npc_name = target[0]; // get specified npc
-
-                NPC* npc = current_location->find_npc(npc_name); // looks for npc in current location
-                if (npc) {
-                        std::string message = npc->talk();
-                        std::cout << npc_name << " says: " << message << std::endl;
-                } else {
-                        std::cout << npc_name << " is not in this location." << std::endl;
-                }
         }
+        
+        Location* current_location = player.get_current_location(); // get current location
+        std::string userInput = target[0]; // get typed name 
+
+        for (char& c : userInput) c = std::tolower(c); // Convert to compare
+
+        // Search for NPC 
+        for (NPC* npc : current_location->get_npcs()) {
+                std::istringstream iss(npc->get_name());
+                std::string firstName;
+                iss >> firstName; // Extract first name 
+
+            // Store original first name
+            std::string originalName = firstName;
+
+            // Convert to compare
+            std::string firstNameLower = firstName;
+            for (char& c : firstNameLower) c = std::tolower(c);
+
+            if (firstNameLower == userInput) {
+                std::cout << originalName << " says: " << npc->talk() << std::endl;
+                return;
+            }
+        }
+        std::cout << userInput << " is not in this location." << std::endl;
 }
 
 void Game::meet(std::vector<std::string> target) {
@@ -158,84 +171,84 @@ void Game::create_world() {
     // =============================
     // 2. Define NPCs
     // =============================
-    NPC stanley("Stanley, the Overworked Cashier","A tired student worker who barely acknowledges customers.",
+    NPC* stanley = new NPC("Stanley, the Overworked Cashier","A tired student worker who barely acknowledges customers.",
             {"Next.",
              "Swipe your ID.",
              "Enjoy your meal... or don't. I don't care."});
-    NPC marla("Chef Marla","A strict cook who takes pride in her mass-produced food.",
+    NPC* marla = new NPC("Chef Marla","A strict cook who takes pride in her mass-produced food.",
             {"If you don't like it, cook for yourself next time.",
             "That lasagna took hours. You better appreciate it.",
             "Take all you want, but don't waste it."});
 
-    NPC anderson("Coach Anderson","A lunatic coach who spends most of his time yelling at players.",
+    NPC* anderson = new NPC("Coach Anderson","A lunatic coach who spends most of his time yelling at players.",
             {"Hustle up!",
              "You're only as good as your last play!",
              "Keep your head in the game!."});
-    NPC chloe("Chloe, the Workout Enthusiast", "A high-energy student always looking for the next fitness challenge.",
+    NPC* chloe = new NPC("Chloe, the Workout Enthusiast", "A high-energy student always looking for the next fitness challenge.",
             {"No pain, no gain!",
              "Hydration is key—did you drink enough water today?",
              "Just one more rep! You got this!"});
     
-    NPC milo("Milo, the Equipment Tinkerer", "A student always fixing gym equipment, convinced the machines have hidden secrets.",
+    NPC* milo = new NPC("Milo, the Equipment Tinkerer", "A student always fixing gym equipment, convinced the machines have hidden secrets.",
             {"The weights whisper when no one's looking.", 
              "These machines are plotting something big.", 
              "One small tweak, and your workout changes forever."});
-    NPC aurora("Aurora, the Snack Philosopher", "A laid-back student who ponders the meaning behind every snack.",
+    NPC* aurora = new NPC("Aurora, the Snack Philosopher", "A laid-back student who ponders the meaning behind every snack.",
             {"A granola bar isn't just a snack!", 
              "Every stale cookie tells a story of endurance.", 
              "Remember, sometimes the best workout is a thoughtful pause for a snack."});
 
-    NPC lana("Lana, the Lounge Lurker", "A student who's always lounging around campus, avoiding class with a new excuse.",
+    NPC* lana = new NPC("Lana, the Lounge Lurker", "A student who's always lounging around campus, avoiding class with a new excuse.",
             {"Nap studies should be a real major.", 
              "Procrastination is an art form.", 
              "If you skip class, no homework!"});
-    NPC todd("Todd, the Tour Guide", "Overenthusiastic but easily distracted, he gives tours but often forgets where he's going.",
+    NPC* todd = new NPC("Todd, the Tour Guide", "Overenthusiastic but easily distracted, he gives tours but often forgets where he's going.",
             {"Welcome to campus—wait, where are we?", 
              "Here's the library... I think.", 
              "Best pizza is... somewhere around here."});
 
-    NPC james("James, the Forever Student", "James has been here for at least a decade, switching majors every couple years.",
+    NPC* james = new NPC("James, the Forever Student", "James has been here for at least a decade, switching majors every couple years.",
             {"Oh, you're new? I was new... 12 years ago.", 
              "Thinking of switching to Classics. Or Biology. Or both.", 
              "I have enough credits to graduate, but what's the rush?"});
     
-    NPC lenz("Lenz, the Over-Caffeinated Professor", "Runs purely on espresso and questionable enthusiasm. Speaks at 2x speed.",
+    NPC* lenz = new NPC("Lenz, the Over-Caffeinated Professor", "Runs purely on espresso and questionable enthusiasm. Speaks at 2x speed.",
             {"Science waits for no one—except grant funding.", 
              "Ask questions! Just not during my coffee break.", 
              "That reaction won't explode... probably."});
-    NPC sam("Sam, the Perpetual Lab Student", "Has been in the lab so long, they might have tenure. Smells faintly of ethanol.",
+    NPC* sam = new NPC("Sam, the Perpetual Lab Student", "Has been in the lab so long, they might have tenure. Smells faintly of ethanol.",
             {"What day is it? Lab days don't count.", 
              "If I leave now, I'll ruin my no-sunlight streak.", 
              "I made soap again instead of my experiment..."});
     
-    NPC greg("Greg, the Over-Dramatic Student", "A business major who always has a dramatic story to tell.",
+    NPC* greg = new NPC("Greg, the Over-Dramatic Student", "A business major who always has a dramatic story to tell.",
             {"One more email and I'll explode!", 
              "My coffee's cold. Today is doomed.", 
              "I tried studying, but the universe had other plans."});
-    NPC debbie("Debbie, the Bookstore Cat Lady", "A student who spends more time at the campus bookstore than in actual classes.",
+    NPC* debbie = new NPC("Debbie, the Bookstore Cat Lady", "A student who spends more time at the campus bookstore than in actual classes.",
             {"I've read this book ten times—it's so cozy!", 
              "The bookstore cat understands me.", 
              "You should read this… unless you prefer textbooks!"});
 
-    NPC spencer("Spencer, the Self-Proclaimed Artist", "A biology major who spends all his free time painting random objects around the building.",
+    NPC* spencer = new NPC("Spencer, the Self-Proclaimed Artist", "A biology major who spends all his free time painting random objects around the building.",
             {"This beaker is my masterpiece.", 
              "It's not just a chair, it's the chair of despair.", 
              "Painting photosynthesis is harder than it looks!"});
-    NPC tina("Tina, the Tech Over-Explainer", "A computer science major who believes everyone wants to hear about her latest tech discovery.",
+    NPC* tina = new NPC("Tina, the Tech Over-Explainer", "A computer science major who believes everyone wants to hear about her latest tech discovery.",
             {"4 lines of Python can automate your life!", 
              "I'm making an app—Uber for homework.", 
              "Still using that phone? Let me show you how to root it!"});
 
-    NPC matt("Matt, the Walking Calendar", "Knows every event happening on campus.",
+    NPC* matt = new NPC("Matt, the Walking Calendar", "Knows every event happening on campus.",
             {"Join the meeting—I got the day planned!", 
              "I should make a Google Calendar for my Google Calendar.", 
              "Gotta run to my 3:15! It's in 3 minutes!"});
-    NPC lily("Lily, the Loud Study Group Leader", "Always organizing study groups.",
+    NPC* lily = new NPC("Lily, the Loud Study Group Leader", "Always organizing study groups.",
             {"OK, let's break this down—EVERYONE GOT THEIR PENS?!", 
              "The answer is obviously C—are we all clear?!?", 
              "Can't focus, I'm too excited for finals!"});
 
-    NPC elf("Bernard the Watchful elf", "An all-powerful elf with an enormous appetite.",
+    NPC* bernard = new NPC("Bernard the Watchful", "An all-powerful elf with an enormous appetite.",
             {"Have you gathered enough food yet?",
              "The school's survival depends on your success. Keep searching!",
              "Your journey is not over until I am well-fed."});
@@ -342,7 +355,7 @@ void Game::create_world() {
     kirkoffCenter->add_npc(matt);
     kirkoffCenter->add_npc(lily);
 
-    theForest->add_npc(elf);
+    theForest->add_npc(bernard);
 
     // =============================
     // 5. Define Location Connections
