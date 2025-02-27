@@ -32,6 +32,10 @@ std::vector<NPC*> Location::get_npcs() const {
     return npcs;
 }
 
+std::multimap<std::string, Location*> Location::get_locations() const {
+    return neighbors; 
+}
+
 // Add an NPC to the location
 void Location::add_npc(NPC* npc) {
     npcs.push_back(npc);

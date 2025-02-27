@@ -13,6 +13,8 @@ private:
 public:
     Player();
     Location* get_current_location() const;
+    float get_weight() const;
+
     void set_current_location(Location* location);
     void add_item_to_inventory(Item item);
     void show_inventory() const;

@@ -416,7 +416,7 @@ void Game::create_world() {
 
     theForest->add_location("West", theCommons);
     
-    player.set_current_location(theForest);
+    player.set_current_location(theForest); // Set starting location 
 }
 
 void Game::start() {

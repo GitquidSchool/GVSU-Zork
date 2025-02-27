@@ -11,6 +11,10 @@ void Player::set_current_location(Location* location) {
     current_location = location;
 }
 
+float Player::get_weight() const {
+    return carried_weight; 
+}
+
 void Player::add_item_to_inventory(Item item) {
     inventory.push_back(item);
 }
