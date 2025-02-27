@@ -38,6 +38,8 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Location& location);
 
     NPC* find_npc(const std::string& name);
+    Item* find_item(const std::string& name);
+    void remove_item(const std::string& name);
 };
 
 #endif

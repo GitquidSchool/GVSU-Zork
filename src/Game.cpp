@@ -46,21 +46,21 @@ void Game::show_help(std::vector<std::string>) {
         }
 }
 
-void Game::talk(std::vector<std::string> target) {
+    void Game::talk(std::vector<std::string> target) {
         if (target.empty()) { // if npc name not provided
                 std::cout << "Who are you talking to?" << std::endl;
                 return;
         } else {
-                Location* currentLocation = player.get_current_location(); // get current location
+                Location* current_location = player.get_current_location(); // get current location
 
-                std::string npcName = target[0]; // get specified npc
+                std::string npc_name = target[0]; // get specified npc
 
-                NPC* npc = currentLocation->find_npc(npcName); // looks for npc in current location
+                NPC* npc = current_location->find_npc(npc_name); // looks for npc in current location
                 if (npc) {
                         std::string message = npc->talk();
-                        std::cout << npcName << " says: " << message << std::endl;
+                        std::cout << npc_name << " says: " << message << std::endl;
                 } else {
-                        std::cout << npcName << " is not in this location." << std::endl;
+                        std::cout << npc_name << " is not in this location." << std::endl;
                 }
         }
 }
@@ -70,16 +70,34 @@ void Game::meet(std::vector<std::string> target) {
                 std::cout << "That person isnt here." << std::endl;
                 return;
         } else {
-                Location* currentLocation = player.get_current_location(); // get current location
-                std::string npcName = target[0]; // get specified npc
-                NPC* npc = currentLocation->find_npc(npcName); // looks for npc in current location
+                Location* current_location = player.get_current_location(); // get current location
+                std::string npc_name = target[0]; // get specified npc
+                NPC* npc = current_location->find_npc(npc_name); // looks for npc in current location
                 if (npc) {
-                        std::cout << "You meet" << npcName << ": " << npc->get_description() << std::endl;
+                        std::cout << "You meet" << npc_name << ": " << npc->get_description() << std::endl;
                 }
         }
         
 }
 
+void Game::take(std::vector<std::string> target) {
+        if (target.empty()){ // if item name not provided
+                std::cout << "That item isnt here." << std::endl;
+                return;
+        } else {
+                Location* current_location = player.get_current_location(); // get current location
+                std::string item_name = target[0]; // get specified item
+                Item* item = current_location->find_item(item_name); // looks for item in current location
+                if (item) {
+                        current_location->remove_item(item_name); // remove from current location
+                        player.add_item_to_inventory(*item); // adds item to player inventory
+                        player.add_weight(item->get_weight()); // adds weight to player
+                        std::cout << "You took the " << item_name << "." << std::endl;
+                } else {
+                        std::cout << item_name << " is not in this location." << std::endl;
+                }
+        }
+}
 
 
 
