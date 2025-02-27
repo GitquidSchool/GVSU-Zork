@@ -11,7 +11,7 @@ Game::Game() : required_calories(500), in_progress(true) {
 
 void Game::setup_commands() {
         commands["help"] = [this](std::vector<std::string> args) { show_help(args); };
-        //commands["talk"] = [this](std::vector<std::string> args) { talk(args); };
+        commands["talk"] = [this](std::vector<std::string> args) { talk(args); };
         //commands["meet"] = [this](std::vector<std::string> args) { meet(args); };
         //commands["take"] = [this](std::vector<std::string> args) { take(args); };
         //commands["give"] = [this](std::vector<std::string> args) { give(args); };
@@ -24,30 +24,74 @@ void Game::setup_commands() {
 }
 
 void Game::show_help(std::vector<std::string>) {
-        // Get current time
-        std::time_t now = std::time(nullptr);
+        std::time_t current_time = std::time(nullptr); //gets time
         std::tm local_time;
-        localtime_s(&local_time, &now);
+        localtime_s(&local_time, &current_time);
 
         // format HH:MM and print 
         char time_str[6];  // 5 chars + null terminator
         std::strftime(time_str, sizeof(time_str), "%H:%M", &local_time);
-        std::cout << "Current Time: " << time_str << "\n";
+        std::cout << "Current Time: " << time_str << std::endl;
         
-        std::cout << "Available commands:\n";
-        for (const auto& cmd : commands) {
-            std::cout << "- " << cmd.first << "\n";
+        std::cout << "Available commands: " << std::endl;
+        for (const auto& command : commands) {
+            std::cout << "- " << command.first << std::endl;
         }
     }
 
+void Game::talk(std::vector<std::string> target) {
+        if (target.empty()) { // if npc name not provided
+                std::cout << "Who are you talking to?" << std::endl;
+                return;
+        } else {
+                Location* currentLocation = player.get_current_location(); // get current location
+
+                std::string npcName = target[0]; // get specified npc
+
+                NPC* npc = currentLocation->find_npc(npcName); // looks for npc in current location
+                if (npc) {
+                        std::string message = npc->talk();
+                        std::cout << npcName << " says: " << message << std::endl;
+                } else {
+                        std::cout << npcName << " is not in this location." << std::endl;
+                }
+        }
+}
+
+void Game::meet(std::vector<std::string> target) {
+        if (target.empty()) { // if npc name not provided
+                std::cout << "That person isnt here." << std::endl;
+                return;
+        } else {
+                Location* currentLocation = player.get_current_location(); // get current location
+                std::string npcName = target[0]; // get specified npc
+                NPC* npc = currentLocation->find_npc(npcName); // looks for npc in current location
+                if (npc) {
+                        std::cout << "You meet" << npcName << ": " << npc->get_description() << std::endl;
+                }
+        }
+        
+}
 
 
 
 
-    void Game::quit(std::vector<std::string>) {
+
+
+
+
+
+
+
+
+
+
+
+
+void Game::quit(std::vector<std::string>) {
         in_progress = false;
         std::cout << std::endl << "You have failed the elf and our school!" << std::endl;
-    }
+}
 
 void Game::create_world() {
     // =============================
@@ -327,58 +371,4 @@ void Game::game_loop() {
         }
     }
 
-void Game::show_help() {
 
-        // time and date method from google ai overview
-        std::time_t currentTime = std::time(nullptr); // gets time
-        std::tm* localTime = std::localtime(&currentTime); // sets to local time
-
-        int hour = localTime->tm_hour;
-        int min = localTime->tm_min;
-        int sec = localTime->tm_sec;
-
-        std::cout << "Current time: " << hour << ":" << min << ":" << sec << std::endl; // in 24 hour time
-        
-        std::cout << "Commands: " << std::endl;
-        for (const auto& command : commands) { // auto: automatically deduces type
-                std::cout << command.first << std::endl;
-        }
-}
-
-void Game::talk(std::vector<std::string> target) {
-        if (target.empty()) { // if npc name not provided
-                std::cout << "Who are you talking to?" << std::endl;
-                return;
-        } else {
-                Location* currentLocation = player.get_current_location(); // get current location
-
-                std::string npcName = target[0]; // get specified npc
-
-                NPC* npc = currentLocation->find_npc(npcName); // looks for npc in current location
-                if (npc) {
-                        std::string message = npc->talk();
-                        std::cout << npcName << " says: " << message << std::endl;
-                } else {
-                        std::cout << npcName << " is not in this location." << std::endl;
-                }
-        }
-}
-
-void Game::meet(std::vector<std::string> target) {
-        if (target.empty()) { // if npc name not provided
-                std::cout << "That person isnt here." << std::endl;
-                return;
-        } else {
-                Location* currentLocation = player.get_current_location(); // get current location
-                std::string npcName = target[0]; // get specified npc
-                NPC* npc = currentLocation->find_npc(npcName); // looks for npc in current location
-                if (npc) {
-                        std::cout << "You meet" << npcName << ": " << npc->get_description() << std::endl;
-                }
-        }
-        
-}
-
-// void Game::take(std::vector<std::string> target) {
-
-// }
