@@ -3,11 +3,12 @@
 #include <ctime>
 #include <cstdlib>
 #include <sstream>
+#include <limits>
 
 Game::Game() : required_calories(500), in_progress(true) {
         setup_commands();
         create_world();
-    }
+}
 
 void Game::setup_commands() {
         commands["help"] = [this](std::vector<std::string> args) { show_help(args); };
@@ -15,7 +16,7 @@ void Game::setup_commands() {
         commands["meet"] = [this](std::vector<std::string> args) { meet(args); };
         commands["take"] = [this](std::vector<std::string> args) { take(args); };
         //commands["give"] = [this](std::vector<std::string> args) { give(args); };
-        //commands["go"] = [this](std::vector<std::string> args) { go(args); };
+        commands["go"] = [this](std::vector<std::string> args) { go(args); };
         //commands["inventory"] = [this](std::vector<std::string> args) { show_items(args); };
         commands["look"] = [this](std::vector<std::string> args) { look(args); };
         commands["quit"] = [this](std::vector<std::string> args) { quit(args); };
@@ -35,21 +36,21 @@ void Game::show_help(std::vector<std::string>) {
         
         std::cout << "Available commands: " << std::endl;
 
-        // Defined order of commands
+        // Order of commands
         std::vector<std::string> orderedCommands = 
-        {"help", "talk", "meet", "look", "quit"};
+        {"help", "talk", "meet", "look", "go", "quit"};
 
         for (const std::string& command : orderedCommands) {
-                if (commands.find(command) != commands.end()) {
-                        std::cout << "- " << command << std::endl;   
-                }
+             if (commands.find(command) != commands.end()) {
+                 std::cout << "- " << command << std::endl;   
+             }
         }
 }
 
 void Game::talk(std::vector<std::string> target) {
         if (target.empty()) { // if npc name not provided
-                std::cout << "Who are you talking to?" << std::endl;
-                return;
+            std::cout << "Who are you talking to?" << std::endl;
+            return;
         }
         
         Location* current_location = player.get_current_location(); // get current location
@@ -59,9 +60,9 @@ void Game::talk(std::vector<std::string> target) {
 
         // Search for NPC 
         for (NPC* npc : current_location->get_npcs()) {
-                std::istringstream iss(npc->get_name());
-                std::string firstName;
-                iss >> firstName; // Extract first name 
+             std::istringstream iss(npc->get_name());
+             std::string firstName;
+             iss >> firstName; // Extract first name 
 
             // Store original first name
             std::string originalName = firstName;
@@ -80,8 +81,8 @@ void Game::talk(std::vector<std::string> target) {
 
 void Game::meet(std::vector<std::string> target) {
         if (target.empty()) { // if npc name not provided
-                std::cout << "That person isn't here." << std::endl;
-                return;
+            std::cout << "That person isn't here." << std::endl;
+            return;
         } 
 
         Location* current_location = player.get_current_location(); // get current location
@@ -91,22 +92,22 @@ void Game::meet(std::vector<std::string> target) {
         
         // Search for NPC
         for (NPC* npc : current_location->get_npcs()) { 
-            std::istringstream iss(npc->get_name());
-            std::string firstName;
-            iss >> firstName; // Extract first name 
+             std::istringstream iss(npc->get_name());
+             std::string firstName;
+             iss >> firstName; // Extract first name 
 
-            // Store full name 
-            std::string fullName = npc->get_name();
+             // Store full name 
+             std::string fullName = npc->get_name();
 
-            // Convert to compare
-            std::string firstNameLower = firstName;
-            for (char& c : firstNameLower) c = std::tolower(c);
+             // Convert to compare
+             std::string firstNameLower = firstName;
+             for (char& c : firstNameLower) c = std::tolower(c);
 
-            if (firstNameLower == userInput) {
-                std::cout << "You meet " << fullName << ": " << npc->get_description() << std::endl;
-                return;
-            }
-    }
+             if (firstNameLower == userInput) {
+                 std::cout << "You meet " << fullName << ": " << npc->get_description() << std::endl;
+                 return;
+             }
+        }
 
     std::cout << userInput << " isn't here." << std::endl;
 }       
@@ -144,7 +145,74 @@ void Game::take(std::vector<std::string> target) {
 
 
 
+void Game::go(std::vector<std::string> target) {
+        if (target.empty()) { // if direction not provided
+            std::cout << "Where do you want to go?" << std::endl;
+            return;
+        }
 
+        Location* current_location = player.get_current_location(); // get current location
+        std::string direction = target[0]; // get specified direction
+
+
+        std::string directionLower = direction;
+        for(char& c : directionLower) c = std::tolower(c);
+
+        current_location->set_visited(); // mark current visited
+
+        // Check if overweight
+        if(player.get_weight() > 30.0f) {
+           std::cout << "You are carrying too much weight." << std::endl;
+           return;
+        }
+
+        std::multimap<std::string, Location*> neighbors = current_location->get_locations(); 
+        std::vector<Location*> possibleLocations; // Account for locations same multiple directions
+        std::string formattedDirection;
+
+        for (const auto& pair : neighbors) {
+             std::string storedDirectionLower = pair.first;
+             for (char& c : storedDirectionLower) c = std::tolower(c);
+        
+             if (storedDirectionLower == directionLower) {
+                 possibleLocations.push_back(pair.second);
+                 formattedDirection = pair.first;
+             }
+        }
+
+        if (possibleLocations.empty()) {
+            std::cout << "You can't go " << formattedDirection << " from here." << std::endl;
+            return;
+        }
+
+        if (possibleLocations.size() == 1) {
+            // one location → Move directly
+            player.set_current_location(possibleLocations[0]);
+            std::cout << "You move " << formattedDirection << " to " << possibleLocations[0]->get_name() << "." << std::endl;
+        } else {
+            // Multiple locations → Ask the player
+            // (CHATGPT ASSISTED)
+            std::cout << "There are multiple paths " << formattedDirection << ".\n";
+            int count = 1;
+            for (auto option : possibleLocations) {
+                 std::cout << count << ". " << (option->get_visited() ? option->get_name() + " (Visited)" : "Unknown") << std::endl;
+                 count++;
+            }
+            //
+            std::cout << "Enter the number of the location you want to go to: ";
+            int choice;
+            std::cin >> choice;
+            // (CHATGPT ASSISTED)
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clear input buffer
+            //
+            if (choice > 0 && choice <= possibleLocations.size()) {
+                player.set_current_location(possibleLocations[choice - 1]);
+                std::cout << "You move " << formattedDirection << " to " << possibleLocations[choice - 1]->get_name() << "." << std::endl;
+            } else {
+                std::cout << "Invalid choice. Staying at " << current_location->get_name() << "." << std::endl;
+            }
+        }
+}
 
 void Game::look(std::vector<std::string> target) {
         // Get curr location, also check if valid location
@@ -193,79 +261,79 @@ void Game::create_world() {
     // =============================
     // 2. Define NPCs
     // =============================
-    NPC* stanley = new NPC("Stanley, the Overworked Cashier","A tired student worker who barely acknowledges customers.",
-            {"Next.",
+    NPC* stanley = new NPC("Stanley the Overworked Cashier","A tired student worker who barely acknowledges customers.",
+            {"Next in line please.",
              "Swipe your ID.",
              "Enjoy your meal... or don't. I don't care."});
-    NPC* marla = new NPC("Chef Marla","A strict cook who takes pride in her mass-produced food.",
+    NPC* marla = new NPC("Marla the Chef","A strict cook who takes pride in her mass-produced food.",
             {"If you don't like it, cook for yourself next time.",
             "That lasagna took hours. You better appreciate it.",
             "Take all you want, but don't waste it."});
 
-    NPC* anderson = new NPC("Coach Anderson","A lunatic coach who spends most of his time yelling at players.",
+    NPC* anderson = new NPC("Anderson the Coach","A lunatic coach who spends most of his time yelling at players.",
             {"Hustle up!",
              "You're only as good as your last play!",
              "Keep your head in the game!."});
-    NPC* chloe = new NPC("Chloe, the Workout Enthusiast", "A high-energy student always looking for the next fitness challenge.",
+    NPC* chloe = new NPC("Chloe the Workout Enthusiast", "A high-energy student always looking for the next fitness challenge.",
             {"No pain, no gain!",
              "Hydration is key—did you drink enough water today?",
              "Just one more rep! You got this!"});
     
-    NPC* milo = new NPC("Milo, the Equipment Tinkerer", "A student always fixing gym equipment, convinced the machines have hidden secrets.",
+    NPC* milo = new NPC("Milo the Equipment Tinkerer", "A student always fixing gym equipment, convinced the machines have hidden secrets.",
             {"The weights whisper when no one's looking.", 
              "These machines are plotting something big.", 
-             "One small tweak, and your workout changes forever."});
-    NPC* aurora = new NPC("Aurora, the Snack Philosopher", "A laid-back student who ponders the meaning behind every snack.",
+             "One small tweak, and your workout could change forever."});
+    NPC* aurora = new NPC("Aurora the Snack Philosopher", "A laid-back student who ponders the meaning behind every snack.",
             {"A granola bar isn't just a snack!", 
              "Every stale cookie tells a story of endurance.", 
              "Remember, sometimes the best workout is a thoughtful pause for a snack."});
 
-    NPC* lana = new NPC("Lana, the Lounge Lurker", "A student who's always lounging around campus, avoiding class with a new excuse.",
+    NPC* lana = new NPC("Lana the Lounge Lurker", "A student who's always lounging around campus, avoiding class with a new excuse.",
             {"Nap studies should be a real major.", 
              "Procrastination is an art form.", 
              "If you skip class, no homework!"});
-    NPC* todd = new NPC("Todd, the Tour Guide", "Overenthusiastic but easily distracted, he gives tours but often forgets where he's going.",
-            {"Welcome to campus—wait, where are we?", 
+    NPC* todd = new NPC("Todd the Tour Guide", "Overenthusiastic but easily distracted, he gives tours but often forgets where he's going.",
+            {"Welcome to campus—wait, where are we again?", 
              "Here's the library... I think.", 
              "Best pizza is... somewhere around here."});
 
-    NPC* james = new NPC("James, the Forever Student", "James has been here for at least a decade, switching majors every couple years.",
-            {"Oh, you're new? I was new... 12 years ago.", 
+    NPC* james = new NPC("James the Forever Student", "James has been here for at least a decade, switching majors every couple years.",
+            {"Oh, you're new? I was new... like 12 years ago.", 
              "Thinking of switching to Classics. Or Biology. Or both.", 
              "I have enough credits to graduate, but what's the rush?"});
     
-    NPC* lenz = new NPC("Lenz, the Over-Caffeinated Professor", "Runs purely on espresso and questionable enthusiasm. Speaks at 2x speed.",
+    NPC* lenz = new NPC("Lenz the Over-Caffeinated Professor", "Runs purely on espresso and questionable enthusiasm. Speaks at 2x speed.",
             {"Science waits for no one—except grant funding.", 
              "Ask questions! Just not during my coffee break.", 
              "That reaction won't explode... probably."});
-    NPC* sam = new NPC("Sam, the Perpetual Lab Student", "Has been in the lab so long, they might have tenure. Smells faintly of ethanol.",
+    NPC* sam = new NPC("Sam the Perpetual Lab Student", "Has been in the lab so long, they might have tenure. Smells faintly of ethanol.",
             {"What day is it? Lab days don't count.", 
              "If I leave now, I'll ruin my no-sunlight streak.", 
              "I made soap again instead of my experiment..."});
     
-    NPC* greg = new NPC("Greg, the Over-Dramatic Student", "A business major who always has a dramatic story to tell.",
+    NPC* greg = new NPC("Greg the Over-Dramatic Student", "A business major who always has a dramatic story to tell.",
             {"One more email and I'll explode!", 
              "My coffee's cold. Today is doomed.", 
              "I tried studying, but the universe had other plans."});
-    NPC* debbie = new NPC("Debbie, the Bookstore Cat Lady", "A student who spends more time at the campus bookstore than in actual classes.",
+    NPC* debbie = new NPC("Debbie the Bookstore Cat Lady", "A student who spends more time at the campus bookstore than in actual classes.",
             {"I've read this book ten times—it's so cozy!", 
              "The bookstore cat understands me.", 
              "You should read this… unless you prefer textbooks!"});
 
-    NPC* spencer = new NPC("Spencer, the Self-Proclaimed Artist", "A biology major who spends all his free time painting random objects around the building.",
+    NPC* spencer = new NPC("Spencer the Self-Proclaimed Artist", "A biology major who spends all his free time painting random objects around the building.",
             {"This beaker is my masterpiece.", 
              "It's not just a chair, it's the chair of despair.", 
              "Painting photosynthesis is harder than it looks!"});
-    NPC* tina = new NPC("Tina, the Tech Over-Explainer", "A computer science major who believes everyone wants to hear about her latest tech discovery.",
+    NPC* tina = new NPC("Tina the Tech Over-Explainer", "A computer science major who believes everyone wants to hear about her latest tech discovery.",
             {"4 lines of Python can automate your life!", 
              "I'm making an app—Uber for homework.", 
              "Still using that phone? Let me show you how to root it!"});
 
-    NPC* matt = new NPC("Matt, the Walking Calendar", "Knows every event happening on campus.",
+    NPC* matt = new NPC("Matt the Walking Calendar", "Knows every event happening on campus.",
             {"Join the meeting—I got the day planned!", 
              "I should make a Google Calendar for my Google Calendar.", 
              "Gotta run to my 3:15! It's in 3 minutes!"});
-    NPC* lily = new NPC("Lily, the Loud Study Group Leader", "Always organizing study groups.",
+    NPC* lily = new NPC("Lily the Loud Study Group Leader", "Always organizing study groups.",
             {"OK, let's break this down—EVERYONE GOT THEIR PENS?!", 
              "The answer is obviously C—are we all clear?!?", 
              "Can't focus, I'm too excited for finals!"});
