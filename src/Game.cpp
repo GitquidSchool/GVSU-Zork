@@ -13,7 +13,7 @@ void Game::setup_commands() {
         commands["help"] = [this](std::vector<std::string> args) { show_help(args); };
         commands["talk"] = [this](std::vector<std::string> args) { talk(args); };
         commands["meet"] = [this](std::vector<std::string> args) { meet(args); };
-        //commands["take"] = [this](std::vector<std::string> args) { take(args); };
+        commands["take"] = [this](std::vector<std::string> args) { take(args); };
         //commands["give"] = [this](std::vector<std::string> args) { give(args); };
         //commands["go"] = [this](std::vector<std::string> args) { go(args); };
         //commands["inventory"] = [this](std::vector<std::string> args) { show_items(args); };
@@ -80,18 +80,40 @@ void Game::talk(std::vector<std::string> target) {
 
 void Game::meet(std::vector<std::string> target) {
         if (target.empty()) { // if npc name not provided
-                std::cout << "That person isnt here." << std::endl;
+                std::cout << "That person isn't here." << std::endl;
                 return;
-        } else {
-                Location* current_location = player.get_current_location(); // get current location
-                std::string npc_name = target[0]; // get specified npc
-                NPC* npc = current_location->find_npc(npc_name); // looks for npc in current location
-                if (npc) {
-                        std::cout << "You meet" << npc_name << ": " << npc->get_description() << std::endl;
-                }
-        }
+        } 
+
+        Location* current_location = player.get_current_location(); // get current location
+        std::string userInput = target[0]; // get typed name 
+
+        for (char& c : userInput) c = std::tolower(c); // Convert to compare
         
-}
+        // Search for NPC
+        for (NPC* npc : current_location->get_npcs()) { 
+            std::istringstream iss(npc->get_name());
+            std::string firstName;
+            iss >> firstName; // Extract first name 
+
+            // Store full name 
+            std::string fullName = npc->get_name();
+
+            // Convert to compare
+            std::string firstNameLower = firstName;
+            for (char& c : firstNameLower) c = std::tolower(c);
+
+            if (firstNameLower == userInput) {
+                std::cout << "You meet " << fullName << ": " << npc->get_description() << std::endl;
+                return;
+            }
+    }
+
+    std::cout << userInput << " isn't here." << std::endl;
+}       
+        
+
+
+
 
 void Game::take(std::vector<std::string> target) {
         if (target.empty()){ // if item name not provided
@@ -153,7 +175,7 @@ void Game::create_world() {
     locations.push_back(Location("Manitou Hall", "A multi-purpose building with classrooms, offices, and student services in a central campus location."));
     locations.push_back(Location("Padnos Hall", "A science-focused building with labs, classrooms, and research spaces for biology, chemistry, and environmental science."));  
     locations.push_back(Location("Kirkoff Center", "A lively student hub with dining, meeting rooms, lounges, and a theater for all things campus life."));
-    locations.push_back(Location("The Forest", "A dark mysterious forest where a powerful magical elf resides."));
+    locations.push_back(Location("The Forest", "A dark mysterious forest where a powerful elf resides."));
 
 
     // Store pointers to locations for easy reference
