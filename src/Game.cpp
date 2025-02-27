@@ -11,17 +11,43 @@ Game::Game() : required_calories(500), in_progress(true) {
 
 void Game::setup_commands() {
         commands["help"] = [this](std::vector<std::string> args) { show_help(args); };
-        commands["talk"] = [this](std::vector<std::string> args) { talk(args); };
-        commands["meet"] = [this](std::vector<std::string> args) { meet(args); };
-        commands["take"] = [this](std::vector<std::string> args) { take(args); };
-        commands["give"] = [this](std::vector<std::string> args) { give(args); };
-        commands["go"] = [this](std::vector<std::string> args) { go(args); };
-        commands["inventory"] = [this](std::vector<std::string> args) { show_items(args); };
-        commands["look"] = [this](std::vector<std::string> args) { look(args); };
+        //commands["talk"] = [this](std::vector<std::string> args) { talk(args); };
+        //commands["meet"] = [this](std::vector<std::string> args) { meet(args); };
+        //commands["take"] = [this](std::vector<std::string> args) { take(args); };
+        //commands["give"] = [this](std::vector<std::string> args) { give(args); };
+        //commands["go"] = [this](std::vector<std::string> args) { go(args); };
+        //commands["inventory"] = [this](std::vector<std::string> args) { show_items(args); };
+        //commands["look"] = [this](std::vector<std::string> args) { look(args); };
         commands["quit"] = [this](std::vector<std::string> args) { quit(args); };
-        commands["custom1"] = [this](std::vector<std::string> args) { custom_command_1(args); }; // Placeholder
-        commands["custom2"] = [this](std::vector<std::string> args) { custom_command_2(args); }; // Placeholder
+        //commands["custom1"] = [this](std::vector<std::string> args) { custom_command_1(args); }; // Placeholder
+        //commands["custom2"] = [this](std::vector<std::string> args) { custom_command_2(args); }; // Placeholder
 }
+
+void Game::show_help(std::vector<std::string>) {
+        // Get current time
+        std::time_t now = std::time(nullptr);
+        std::tm local_time;
+        localtime_s(&local_time, &now);
+
+        // format HH:MM and print 
+        char time_str[6];  // 5 chars + null terminator
+        std::strftime(time_str, sizeof(time_str), "%H:%M", &local_time);
+        std::cout << "Current Time: " << time_str << "\n";
+        
+        std::cout << "Available commands:\n";
+        for (const auto& cmd : commands) {
+            std::cout << "- " << cmd.first << "\n";
+        }
+    }
+
+
+
+
+
+    void Game::quit(std::vector<std::string>) {
+        in_progress = false;
+        std::cout << std::endl << "You have failed the elf and our school!" << std::endl;
+    }
 
 void Game::create_world() {
     // =============================
@@ -273,7 +299,8 @@ void Game::create_world() {
 }
 
 void Game::start() {
-    std::cout << "Welcome to the game!" << std::endl;
+    std::cout << "Welcome to GVSU-Zork!" << std::endl;
+    std::cout << "What will you do?";
     game_loop();
 }
 
