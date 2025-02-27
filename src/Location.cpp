@@ -92,3 +92,13 @@ NPC* Location::find_npc(const std::string& name) {
     }
     return nullptr; // no npc found
 }
+
+// finds items in current location
+Item* Location::find_item(const std::string& name) {
+    for (auto& item : items) {
+        if (item.get_name() == name) {
+            return &item;
+        }
+    }
+    return nullptr; // no item found
+}
