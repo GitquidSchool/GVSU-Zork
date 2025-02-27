@@ -60,25 +60,42 @@ bool Location::get_visited() const {
     return visited;
 }
 
-// Overloaded stream operator to format location details
+// Overloaded stream operator to format location details (ASSISTED BY CHATGPT)
 std::ostream& operator<<(std::ostream& os, const Location& location) {
-    os << location.name << " - " << location.description << "\n";
+    os << location.name << " - " << location.description << std::endl << std::endl;
     
-    os << "You see the following NPCs:\n";
-    for (const auto& npc : location.npcs) {
-        os << "- " << npc.get_name() << "\n";
+    // Display NPCs at location
+    if (location.npcs.empty()) {
+        os << "You are alone.\n";
+    } else {
+        os << "You see the following NPCs:\n";
+        for (const auto& npc : location.npcs) {
+            os << "- " << npc.get_name() << std::endl;
+        }
+        std::cout << std::endl;
     }
     
-    os << "You see the following Items:\n";
-    for (const auto& item : location.items) {
-        os << "- " << item << "\n";
+    // Display Items at location
+    if (location.items.empty()) {
+        os << "There are no items here.\n\n";
+    } else {
+        os << "You see the following Items:\n";
+        for (const auto& item : location.items) {
+            os << "- " << item << std::endl; 
+        }
+        std::cout << std::endl;
     }
     
-    //CHATGPT ASSISTED
+    // Display available directions
     os << "You can go in the following Directions:\n";
     for (const auto& pair : location.neighbors) {
-        std::string status = pair.second->get_visited() ? pair.second->get_name() + " (Visited)" : "Unknown";
-        os << "- " << pair.first << " - " << status << "\n";
+        // - Direction - Location(Visited)/Unknown
+        os << "- " << pair.first << " - ";  
+        if (pair.second->get_visited()) {
+            os << pair.second->get_name() << " (Visited)\n";
+        } else {
+            os << "Unknown\n";
+        }
     }
     return os;
 }
@@ -86,8 +103,8 @@ std::ostream& operator<<(std::ostream& os, const Location& location) {
 // finds Npcs in current location
 NPC* Location::find_npc(const std::string& name) {
     for (auto& npc : npcs) {
-        if (npc.get_name() == name) {
-            return &npc;
+        if (npc.get_name().find(name) != std::string::npos) { 
+            return &npc; // Returns NPC if input name found within full name
         }
     }
     return nullptr; // no npc found

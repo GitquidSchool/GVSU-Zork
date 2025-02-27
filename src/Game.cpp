@@ -12,21 +12,21 @@ Game::Game() : required_calories(500), in_progress(true) {
 void Game::setup_commands() {
         commands["help"] = [this](std::vector<std::string> args) { show_help(args); };
         commands["talk"] = [this](std::vector<std::string> args) { talk(args); };
-        //commands["meet"] = [this](std::vector<std::string> args) { meet(args); };
+        commands["meet"] = [this](std::vector<std::string> args) { meet(args); };
         //commands["take"] = [this](std::vector<std::string> args) { take(args); };
         //commands["give"] = [this](std::vector<std::string> args) { give(args); };
         //commands["go"] = [this](std::vector<std::string> args) { go(args); };
         //commands["inventory"] = [this](std::vector<std::string> args) { show_items(args); };
-        //commands["look"] = [this](std::vector<std::string> args) { look(args); };
+        commands["look"] = [this](std::vector<std::string> args) { look(args); };
         commands["quit"] = [this](std::vector<std::string> args) { quit(args); };
         //commands["custom1"] = [this](std::vector<std::string> args) { custom_command_1(args); }; // Placeholder
         //commands["custom2"] = [this](std::vector<std::string> args) { custom_command_2(args); }; // Placeholder
 }
 
 void Game::show_help(std::vector<std::string>) {
-        std::time_t current_time = std::time(nullptr); //gets time
+        std::time_t current_time = std::time(nullptr); // gets time
         std::tm local_time;
-        localtime_s(&local_time, &current_time);
+        localtime_s(&local_time, &current_time); // Converts to local
 
         // format HH:MM and print 
         char time_str[6];  // 5 chars + null terminator
@@ -34,10 +34,17 @@ void Game::show_help(std::vector<std::string>) {
         std::cout << "Current Time: " << time_str << std::endl;
         
         std::cout << "Available commands: " << std::endl;
-        for (const auto& command : commands) {
-            std::cout << "- " << command.first << std::endl;
+
+        // Defined order of commands
+        std::vector<std::string> orderedCommands = 
+        {"help", "talk", "meet", "look", "quit"};
+
+        for (const std::string& command : orderedCommands) {
+                if (commands.find(command) != commands.end()) {
+                        std::cout << "- " << command << std::endl;   
+                }
         }
-    }
+}
 
 void Game::talk(std::vector<std::string> target) {
         if (target.empty()) { // if npc name not provided
@@ -86,7 +93,16 @@ void Game::meet(std::vector<std::string> target) {
 
 
 
-
+void Game::look(std::vector<std::string> target) {
+        // Get curr location, also check if valid location
+        Location* currentLocation = player.get_current_location();
+        if (!currentLocation) {
+            std::cout << "You seem to be nowhere... something went wrong!" << std::endl;
+            return;
+        }    
+        // Uses overloaded stream operator to print location details
+        std::cout << *currentLocation;
+}
 
 void Game::quit(std::vector<std::string>) {
         in_progress = false;
@@ -106,7 +122,7 @@ void Game::create_world() {
     locations.push_back(Location("Manitou Hall", "A multi-purpose building with classrooms, offices, and student services in a central campus location."));
     locations.push_back(Location("Padnos Hall", "A science-focused building with labs, classrooms, and research spaces for biology, chemistry, and environmental science."));  
     locations.push_back(Location("Kirkoff Center", "A lively student hub with dining, meeting rooms, lounges, and a theater for all things campus life."));
-    locations.push_back(Location("The Forest", "A dark mysterious forest where the magical elf resides."));
+    locations.push_back(Location("The Forest", "A dark mysterious forest where a powerful magical elf resides."));
 
 
     // Store pointers to locations for easy reference
@@ -165,7 +181,7 @@ void Game::create_world() {
              "Thinking of switching to Classics. Or Biology. Or both.", 
              "I have enough credits to graduate, but what's the rush?"});
     
-    NPC dr_lenz("Dr. Lenz, the Over-Caffeinated Professor", "Runs purely on espresso and questionable enthusiasm. Speaks at 2x speed.",
+    NPC lenz("Lenz, the Over-Caffeinated Professor", "Runs purely on espresso and questionable enthusiasm. Speaks at 2x speed.",
             {"Science waits for no one—except grant funding.", 
              "Ask questions! Just not during my coffee break.", 
              "That reaction won't explode... probably."});
@@ -201,6 +217,10 @@ void Game::create_world() {
              "The answer is obviously C—are we all clear?!?", 
              "Can't focus, I'm too excited for finals!"});
 
+    NPC elf("Bernard the Watchful elf", "An all-powerful elf with an enormous appetite.",
+            {"Have you gathered enough food yet?",
+             "The school's survival depends on your success. Keep searching!",
+             "Your journey is not over until I am well-fed."});
 
     // =============================
     // 3. Define Items
@@ -281,7 +301,7 @@ void Game::create_world() {
     kindschiHall->add_item(safetyGoggles);
     kindschiHall->add_item(bunsenTubing);
     kindschiHall->add_item(labCoat);
-    kindschiHall->add_npc(dr_lenz);
+    kindschiHall->add_npc(lenz);
     kindschiHall->add_npc(sam);
 
     manitouHall->add_item(staleBagel);
@@ -304,40 +324,44 @@ void Game::create_world() {
     kirkoffCenter->add_npc(matt);
     kirkoffCenter->add_npc(lily);
 
+    theForest->add_npc(elf);
+
     // =============================
     // 5. Define Location Connections
     // =============================
-    theCommons->add_location("east", theForest);
-    theCommons->add_location("west", manitouHall);
-    theCommons->add_location("west", padnosHall);
+    theCommons->add_location("East", theForest);
+    theCommons->add_location("West", manitouHall);
+    theCommons->add_location("West", padnosHall);
 
-    theFieldHouse->add_location("east", mackinacHall);
-    theFieldHouse->add_location("south", theRecreationCenter);
+    theFieldHouse->add_location("East", mackinacHall);
+    theFieldHouse->add_location("South", theRecreationCenter);
 
-    theRecreationCenter->add_location("east", kindschiHall);
-    theRecreationCenter->add_location("north", theFieldHouse);
+    theRecreationCenter->add_location("East", kindschiHall);
+    theRecreationCenter->add_location("North", theFieldHouse);
 
-    mackinacHall->add_location("west", theFieldHouse);
-    mackinacHall->add_location("south", manitouHall);
+    mackinacHall->add_location("West", theFieldHouse);
+    mackinacHall->add_location("South", manitouHall);
 
-    lakeMichiganHall->add_location("east", padnosHall);
-    lakeMichiganHall->add_location("north", kindschiHall);   
+    lakeMichiganHall->add_location("East", padnosHall);
+    lakeMichiganHall->add_location("North", kindschiHall);   
     
-    kindschiHall->add_location("west", theRecreationCenter);
-    kindschiHall->add_location("south", lakeMichiganHall);
-    kindschiHall->add_location("east", padnosHall);
+    kindschiHall->add_location("West", theRecreationCenter);
+    kindschiHall->add_location("South", lakeMichiganHall);
+    kindschiHall->add_location("East", padnosHall);
 
-    manitouHall->add_location("north", mackinacHall);
-    manitouHall->add_location("south", padnosHall);
-    manitouHall->add_location("east", theCommons);
+    manitouHall->add_location("North", mackinacHall);
+    manitouHall->add_location("South", padnosHall);
+    manitouHall->add_location("East", theCommons);
 
-    padnosHall->add_location("west", kindschiHall);
-    padnosHall->add_location("west", lakeMichiganHall);
-    padnosHall->add_location("north", manitouHall);
-    padnosHall->add_location("south", kirkoffCenter);
-    padnosHall->add_location("east", theCommons);
+    padnosHall->add_location("West", kindschiHall);
+    padnosHall->add_location("West", lakeMichiganHall);
+    padnosHall->add_location("North", manitouHall);
+    padnosHall->add_location("South", kirkoffCenter);
+    padnosHall->add_location("East", theCommons);
 
-    kirkoffCenter->add_location("north", padnosHall);  
+    kirkoffCenter->add_location("North", padnosHall);  
+
+    theForest->add_location("West", theCommons);
     
     player.set_current_location(theForest);
 }
@@ -349,26 +373,27 @@ void Game::start() {
 }
 
 void Game::game_loop() {
-        while (in_progress) {
-            std::cout << "\n> ";
-            std::string input;
-            std::getline(std::cin, input);
-            
-            std::vector<std::string> tokens;
-            std::istringstream iss(input);
-            for (std::string s; iss >> s; ) tokens.push_back(s);
-    
-            if (tokens.empty()) continue;
-    
-            std::string command = tokens[0];
-            tokens.erase(tokens.begin());
-    
-            if (commands.find(command) != commands.end()) {
-                commands[command](tokens);
-            } else {
-                std::cout << "Invalid command. Type 'help' for available commands." << std::endl;
-            }
+    while (in_progress) {
+        std::cout << "\n> ";
+        std::string input;
+        std::getline(std::cin, input);
+        
+        // Tokenize input (ASSISTED BY CHATGPT)
+        std::vector<std::string> tokens;
+        std::istringstream iss(input);
+        for (std::string s; iss >> s; ) tokens.push_back(s);
+
+        if (tokens.empty()) continue;
+
+        std::string command = tokens[0];
+        tokens.erase(tokens.begin());
+
+        if (commands.find(command) != commands.end()) {
+            commands[command](tokens);
+        } else {
+            std::cout << "Invalid command. Type 'help' for available commands." << std::endl;
         }
     }
+}
 
 

@@ -34,6 +34,7 @@ public:
     void set_visited();
     bool get_visited() const;
 
+    // Overloaded stream operator to print location details (ASSISTED BY CHATGPT)
     friend std::ostream& operator<<(std::ostream& os, const Location& location);
 
     NPC* find_npc(const std::string& name);

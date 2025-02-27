@@ -42,6 +42,7 @@ float Item::get_weight() const {
     return weight;
 }
 
+// Overloaded stream operator to print item details (ASSISTED BY CHATGPT)
 std::ostream& operator<<(std::ostream& os, const Item& item) {
     os  << item.get_name() << " (" << item.get_calories() << " calories) - "
         << item.get_weight() << " lb - " << item.get_description();

@@ -25,7 +25,7 @@ public:
     int get_calories() const;      
     float get_weight() const;      
 
-    // Overload the stream insertion operator to allows the Item class to be printed
+    // Overload stream insertion operator to allows Item class to be printed (ASSISTED BY CHATGPT)
     friend std::ostream& operator<<(std::ostream& os, const Item& item);
 };
 
