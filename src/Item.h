@@ -23,7 +23,8 @@ public:
     std::string get_name() const;   
     std::string get_description() const; 
     int get_calories() const;      
-    float get_weight() const;      
+    float get_weight() const;
+    bool edible() const;      
 
     // Overload stream insertion operator to allows Item class to be printed (ASSISTED BY CHATGPT)
     friend std::ostream& operator<<(std::ostream& os, const Item& item);

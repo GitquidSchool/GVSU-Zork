@@ -42,6 +42,14 @@ float Item::get_weight() const {
     return weight;
 }
 
+bool Item::edible() const{
+    if (get_calories() > 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 // Overloaded stream operator to print item details (ASSISTED BY CHATGPT)
 std::ostream& operator<<(std::ostream& os, const Item& item) {
     os  << item.get_name() << " (" << item.get_calories() << " calories) - "
