@@ -19,6 +19,8 @@ public:
     void add_item_to_inventory(Item item);
     void show_inventory() const;
     void add_weight(float weight);
+    void remove_item(const std::string& name);
+    Item* find_item(const std::string& name);
 };
 
 #endif

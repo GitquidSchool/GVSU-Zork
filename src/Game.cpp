@@ -12,10 +12,10 @@ Game::Game() : required_calories(500), in_progress(true) {
 
 void Game::setup_commands() {
         commands["help"] = [this](std::vector<std::string> args) { show_help(args); };
-        commands["talk"] = [this](std::vector<std::string> args) { talk(args); };
+        // commands["talk"] = [this](std::vector<std::string> args) { talk(args); };
         commands["meet"] = [this](std::vector<std::string> args) { meet(args); };
         commands["take"] = [this](std::vector<std::string> args) { take(args); };
-        //commands["give"] = [this](std::vector<std::string> args) { give(args); };
+        commands["give"] = [this](std::vector<std::string> args) { give(args); };
         commands["go"] = [this](std::vector<std::string> args) { go(args); };
         commands["inventory"] = [this](std::vector<std::string> args) { show_items(args); };
         commands["look"] = [this](std::vector<std::string> args) { look(args); };
@@ -38,7 +38,7 @@ void Game::show_help(std::vector<std::string>) {
 
         // Order of commands
         std::vector<std::string> orderedCommands = 
-        {"help", "talk", "meet", "inventory", "look", "go", "quit"};
+        {"help", "meet", "take", "give", "inventory", "look", "go", "quit"};
 
         for (const std::string& command : orderedCommands) {
              if (commands.find(command) != commands.end()) {
@@ -47,37 +47,37 @@ void Game::show_help(std::vector<std::string>) {
         }
 }
 
-void Game::talk(std::vector<std::string> target) {
-        if (target.empty()) { // if npc name not provided
-            std::cout << "Who are you talking to?" << std::endl;
-            return;
-        }
+// void Game::talk(std::vector<std::string> target) {
+//         if (target.empty()) { // if npc name not provided
+//             std::cout << "Who are you talking to?" << std::endl;
+//             return;
+//         }
         
-        Location* current_location = player.get_current_location(); // get current location
-        std::string userInput = target[0]; // get typed name 
+//         Location* current_location = player.get_current_location(); // get current location
+//         std::string userInput = target[0]; // get typed name 
 
-        for (char& c : userInput) c = std::tolower(c); // Convert to compare
+//         for (char& c : userInput) c = std::tolower(c); // Convert to compare
 
-        // Search for NPC 
-        for (NPC* npc : current_location->get_npcs()) {
-             std::istringstream iss(npc->get_name());
-             std::string firstName;
-             iss >> firstName; // Extract first name 
+//         // Search for NPC 
+//         for (NPC* npc : current_location->get_npcs()) {
+//              std::istringstream iss(npc->get_name());
+//              std::string firstName;
+//              iss >> firstName; // Extract first name 
 
-            // Store original first name
-            std::string originalName = firstName;
+//             // Store original first name
+//             std::string originalName = firstName;
 
-            // Convert to compare
-            std::string firstNameLower = firstName;
-            for (char& c : firstNameLower) c = std::tolower(c);
+//             // Convert to compare
+//             std::string firstNameLower = firstName;
+//             for (char& c : firstNameLower) c = std::tolower(c);
 
-            if (firstNameLower == userInput) {
-                std::cout << originalName << " says: " << npc->talk() << std::endl;
-                return;
-            }
-        }
-        std::cout << userInput << " is not in this location." << std::endl;
-}
+//             if (firstNameLower == userInput) {
+//                 std::cout << originalName << " says: " << npc->talk() << std::endl;
+//                 return;
+//             }
+//         }
+//         std::cout << userInput << " is not in this location." << std::endl;
+// }
 
 void Game::meet(std::vector<std::string> target) {
         if (target.empty()) { // if npc name not provided
@@ -86,30 +86,30 @@ void Game::meet(std::vector<std::string> target) {
         } 
 
         Location* current_location = player.get_current_location(); // get current location
-        std::string userInput = target[0]; // get typed name 
+        std::string user_input = target[0]; // get typed name 
 
-        for (char& c : userInput) c = std::tolower(c); // Convert to compare
+        for (char& c : user_input) c = std::tolower(c); // Convert to compare
         
         // Search for NPC
         for (NPC* npc : current_location->get_npcs()) { 
              std::istringstream iss(npc->get_name());
-             std::string firstName;
-             iss >> firstName; // Extract first name 
+             std::string first_name;
+             iss >> first_name; // Extract first name 
 
              // Store full name 
-             std::string fullName = npc->get_name();
+             std::string full_name = npc->get_name();
 
              // Convert to compare
-             std::string firstNameLower = firstName;
-             for (char& c : firstNameLower) c = std::tolower(c);
+             std::string first_name_lower = first_name;
+             for (char& c : first_name_lower) c = std::tolower(c);
 
-             if (firstNameLower == userInput) {
-                 std::cout << "You meet " << fullName << ": " << npc->get_description() << std::endl;
+             if (first_name_lower == user_input) {
+                 std::cout << "You meet " << full_name << ": " << npc->get_description() << std::endl;
                  return;
              }
         }
 
-    std::cout << userInput << " isn't here." << std::endl;
+    std::cout << user_input << " isn't here." << std::endl;
 }       
         
 
@@ -121,8 +121,15 @@ void Game::take(std::vector<std::string> target) {
                 std::cout << "That item isnt here." << std::endl;
                 return;
         } else {
+                std::string item_name;
+                for (const auto& word : target) { // for loop that grabs all tokens in item
+                        if (!item_name.empty()) {
+                                item_name += " ";
+                        }
+                        item_name += word; // puts tokens into one string
+                }
+
                 Location* current_location = player.get_current_location(); // get current location
-                std::string item_name = target[0]; // get specified item
                 Item* item = current_location->find_item(item_name); // looks for item in current location
                 if (item) {
                         current_location->remove_item(item_name); // remove from current location
@@ -136,9 +143,41 @@ void Game::take(std::vector<std::string> target) {
 }
 
 
+void Game::give(std::vector<std::string> target) {
+        if (target.empty()){ // if item name not provided
+                std::cout << "That item isnt here." << std::endl;
+                return;
+        } else {
+                std::string item_name;
+                for (const auto& word : target) { // for loop that grabs all tokens in item
+                        if (!item_name.empty()) {
+                                item_name += " ";
+                        }
+                        item_name += word; // puts tokens into one string
+                }
+                
+                Location* current_location = player.get_current_location(); // get current location
+                Item* item = player.find_item(item_name); // looks for item in current location
+                if (item) {
+                        player.remove_item(item_name);
+                        current_location ->add_item(*item);
+                        player.add_weight(-item->get_weight());
+                        std::cout << "You put the " << item_name << " in " << current_location->get_name() << std::endl;
 
-
-
+                        if (current_location->get_name() == "The Forest") {
+                                if (item->edible()) {
+                                        required_calories -= item->get_calories();
+                                        std::cout << "You gave the elf " << item_name << "! Calories left: " << required_calories << std::endl;
+                                } else {
+                                        player.set_current_location(random_location());
+                                        std::cout << "The elf is pissed off. He sent you to " << current_location << std::endl;
+                                }
+                        }
+                } else {
+                        std::cout << item_name << " not in your inventory." << std::endl;
+                }
+        }
+}
 
 
 
@@ -611,3 +650,7 @@ void Game::game_loop() {
 }
 
 
+Location* Game::random_location() {
+        int index = std::rand() % locations.size();
+        return &locations[index];
+}

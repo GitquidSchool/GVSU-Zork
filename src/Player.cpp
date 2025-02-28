@@ -7,6 +7,15 @@ Location* Player::get_current_location() const {
     return current_location;
 }
 
+Item* Player::find_item(const std::string& name) {
+    for (auto& item : inventory) {
+        if (item.get_name() == name) {
+            return &item;
+        }
+    }
+    return nullptr;
+}
+
 void Player::set_current_location(Location* location) {
     current_location = location;
 }
@@ -32,4 +41,14 @@ void Player::show_inventory() const {
 
 void Player::add_weight(float weight) {
     carried_weight += weight;
+}
+
+void Player::remove_item(const std::string& name) {
+    for (auto item = inventory.begin(); item != inventory.end();) { // iterate through player inventory
+        if (item->get_name() == name ) {
+            item = inventory.erase(item);
+        } else {
+            ++item;
+        }
+    }
 }
