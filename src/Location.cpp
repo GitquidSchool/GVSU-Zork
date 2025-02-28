@@ -116,21 +116,42 @@ NPC* Location::find_npc(const std::string& name) {
 
 // finds items in current location
 Item* Location::find_item(const std::string& name) {
-    for (auto& item : items) { // iterate through location inventory by refrences
-        if (item.get_name() == name) {
-            return &item;
+    Item* bestMatch = nullptr;
+
+    for (auto& item : items) { // Iterate through items
+        std::string itemNameLower = item.get_name();
+        for (char& c : itemNameLower) c = std::tolower(c);
+
+        std::string searchLower = name;
+        for (char& c : searchLower) c = std::tolower(c);
+
+        if (itemNameLower.rfind(searchLower, 0) == 0) { 
+            return &item; // return prefix match
+        }
+
+        // Store first partial but keep looking for exact
+        if (itemNameLower.find(searchLower) != std::string::npos && !bestMatch) {
+            bestMatch = &item;
         }
     }
-    return nullptr; // no item found
+
+    return bestMatch; //  Return best match (exact first, partial if no exact match)
 }
 
 // removes item from current location
 void Location::remove_item(const std::string& name) {
-    for (auto item = items.begin(); item != items.end();) { // iterate through location inventory
-        if (item->get_name() == name ) {
-            item = items.erase(item);
+    for (auto iterate = items.begin(); iterate != items.end(); ) { // Iterate through items
+        std::string itemNameLower = iterate->get_name();
+        for (char& c : itemNameLower) c = std::tolower(c);
+
+        std::string searchLower = name;
+        for (char& c : searchLower) c = std::tolower(c);
+
+        if (itemNameLower == searchLower) { // Ensure match before removing
+            iterate = items.erase(iterate); 
+            return;  // Stop after removing match
         } else {
-            ++item;
+            ++iterate;
         }
     }
 }

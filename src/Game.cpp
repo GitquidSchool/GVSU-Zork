@@ -112,40 +112,47 @@ void Game::meet(std::vector<std::string> target) {
     std::cout << user_input << " isn't here." << std::endl;
 }       
         
-
-
-
-
 void Game::take(std::vector<std::string> target) {
         if (target.empty()){ // if item name not provided
-                std::cout << "That item isnt here." << std::endl;
-                return;
-        } else {
-                std::string item_name;
-                for (const auto& word : target) { // for loop that grabs all tokens in item
-                        if (!item_name.empty()) {
-                                item_name += " ";
-                        }
-                        item_name += word; // puts tokens into one string
+            std::cout << "What item do you want to take?" << std::endl;
+            return;
+        } 
+        
+        std::string userInput;
+        for (const auto& word : target) { // for loop that grabs all tokens in item
+                if (!userInput.empty()) {
+                        userInput += " ";
                 }
+                userInput += word; // puts tokens into one string
+        }
 
-                Location* current_location = player.get_current_location(); // get current location
-                Item* item = current_location->find_item(item_name); // looks for item in current location
-                if (item) {
-                        current_location->remove_item(item_name); // remove from current location
-                        player.add_item_to_inventory(*item); // adds item to player inventory
-                        player.add_weight(item->get_weight()); // adds weight to player
-                        std::cout << "You took the " << item_name << "." << std::endl;
-                } else {
-                        std::cout << item_name << " is not in this location." << std::endl;
-                }
+        for (char& c : userInput) c = std::tolower(c);
+
+        Location* current_location = player.get_current_location();
+        Item* matched_item = current_location->find_item(userInput);
+                
+        if (matched_item) {
+            float new_weight = player.get_weight() + matched_item->get_weight();
+            if (new_weight > 30.0f) { 
+                std::cout << "You are carrying too much weight to take " << matched_item->get_name() << "." << std::endl;
+                return;
+            }
+        
+            Item itemCopy = *matched_item;
+
+            current_location->remove_item(matched_item->get_name()); // Remove from location
+            player.add_item_to_inventory(itemCopy); // Add to inventory
+            player.add_weight(itemCopy.get_weight()); // Update weight
+        
+            std::cout << "You took the " << itemCopy.get_name() << "." << std::endl;
+        } else {
+                std::cout << userInput << " is not in this location." << std::endl;
         }
 }
 
-
 void Game::give(std::vector<std::string> target) {
         if (target.empty()){ // if item name not provided
-                std::cout << "That item isnt here." << std::endl;
+                std::cout << "That item isn't here." << std::endl;
                 return;
         } else {
                 std::string item_name;
@@ -178,10 +185,6 @@ void Game::give(std::vector<std::string> target) {
                 }
         }
 }
-
-
-
-
 
 
 void Game::go(std::vector<std::string> target) {
@@ -280,6 +283,7 @@ void Game::go(std::vector<std::string> target) {
 
 
 void Game::show_items(std::vector<std::string> args) {
+        std::cout << "Carried Weight: " << player.get_weight() << " lbs" << std::endl;
         player.show_inventory(); 
 }
 
