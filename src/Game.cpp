@@ -17,10 +17,10 @@ void Game::setup_commands() {
         commands["take"] = [this](std::vector<std::string> args) { take(args); };
         //commands["give"] = [this](std::vector<std::string> args) { give(args); };
         commands["go"] = [this](std::vector<std::string> args) { go(args); };
-        //commands["inventory"] = [this](std::vector<std::string> args) { show_items(args); };
+        commands["inventory"] = [this](std::vector<std::string> args) { show_items(args); };
         commands["look"] = [this](std::vector<std::string> args) { look(args); };
         commands["quit"] = [this](std::vector<std::string> args) { quit(args); };
-        //commands["custom1"] = [this](std::vector<std::string> args) { custom_command_1(args); }; // Placeholder
+        commands["trade"] = [this](std::vector<std::string> args) { trade(args); };
         //commands["custom2"] = [this](std::vector<std::string> args) { custom_command_2(args); }; // Placeholder
 }
 
@@ -38,7 +38,7 @@ void Game::show_help(std::vector<std::string>) {
 
         // Order of commands
         std::vector<std::string> orderedCommands = 
-        {"help", "talk", "meet", "look", "go", "quit"};
+        {"help", "talk", "meet", "inventory", "look", "go", "quit"};
 
         for (const std::string& command : orderedCommands) {
              if (commands.find(command) != commands.end()) {
@@ -214,6 +214,36 @@ void Game::go(std::vector<std::string> target) {
         }
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void Game::show_items(std::vector<std::string> args) {
+        player.show_inventory(); 
+}
+
 void Game::look(std::vector<std::string> target) {
         // Get curr location, also check if valid location
         Location* currentLocation = player.get_current_location();
@@ -228,6 +258,69 @@ void Game::look(std::vector<std::string> target) {
 void Game::quit(std::vector<std::string>) {
         in_progress = false;
         std::cout << std::endl << "You have failed the elf and our school!" << std::endl;
+}
+
+void Game::trade(std::vector<std::string> target) {
+        if (target.empty()) {
+            std::cout << "What item do you want to trade?" << std::endl;
+            return;
+        }
+
+        std::string npcInput = target[0]; 
+
+        for (char& c : npcInput) c = std::tolower(c);
+
+        Location* current_location = player.get_current_location();
+        NPC* selected_npc = nullptr;
+
+        for (NPC* npc : current_location->get_npcs()) {
+             std::istringstream iss(npc->get_name());
+             std::string firstName;
+             iss >> firstName; 
+
+             std::string originalName = firstName;
+             std::string firstNameLower = firstName;
+             for (char& c : firstNameLower) c = std::tolower(c);
+        
+             if (firstNameLower == npcInput) {
+                 selected_npc = npc;
+                 break;
+             }
+        }
+
+        if (!selected_npc) {
+            std::cout << npcInput << " is not in this location." << std::endl;
+            return;
+        }
+
+        std::cout << selected_npc->get_name() << ": \"What would you have to trade?\"" << std::endl;
+        std::string userItemInput;
+        std::getline(std::cin, userItemInput);
+
+        for (char& c : userItemInput) c = std::tolower(c);
+
+        std::string wantedItem = selected_npc->get_wanted_item();
+        std::string wantedItemLower = wantedItem;
+        for (char& c : wantedItemLower) c = std::tolower(c);
+
+        if (wantedItemLower.find(userItemInput) != std::string::npos) {
+                Item reward = selected_npc->get_trade_reward();
+        
+                // Check if the player has the item (case-insensitive check)
+                //for (Item& item : player.get_inventory()) {
+                    //std::string itemNameLower = item.get_name();
+                    //for (char& c : itemNameLower) c = std::tolower(c);
+        
+                    //if (itemNameLower.find(userItemInput) != std::string::npos) {
+                        // Remove item from inventory and give the reward
+                       // player.remove_item_from_inventory(item.get_name());
+                        player.add_item_to_inventory(reward);
+        
+                        //std::cout << selected_npc->get_name() << ": \"Thanks for the " << item.get_name() << "! Here, take this.\"" << std::endl;
+                        std::cout << "You received " << reward.get_name() << "." << std::endl;
+                        return;
+                    }
+                
 }
 
 void Game::create_world() {

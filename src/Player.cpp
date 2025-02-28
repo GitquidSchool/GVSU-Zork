@@ -1,7 +1,7 @@
 #include "Player.h"
 #include <iostream>
 
-Player::Player() : current_location(nullptr) {}
+Player::Player() : current_location(nullptr), carried_weight(0.0f) {} 
 
 Location* Player::get_current_location() const {
     return current_location;
@@ -26,7 +26,7 @@ void Player::show_inventory() const {
     }
     std::cout << "You are carrying the following items:" << std::endl;
     for (const auto& item : inventory) {
-        std::cout << "- " << item << std::endl;
+         std::cout << "- " << item << std::endl;
     }
 }
 

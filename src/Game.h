@@ -31,7 +31,7 @@ private:
     void show_items(std::vector<std::string> args);
     void look(std::vector<std::string> args);
     void quit(std::vector<std::string> args);
-    void custom_command_1(std::vector<std::string> args); // Placeholder
+    void trade(std::vector<std::string> args); 
     void custom_command_2(std::vector<std::string> args); // Placeholder
 
 public:
