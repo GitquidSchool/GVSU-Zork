@@ -179,6 +179,7 @@ void Game::give(std::vector<std::string> target) {
 
                         if (current_location->get_name() == "The Forest") {
                                 if (matched_item->edible()) {
+                                        current_location ->remove_item(matched_item->get_name());
                                         required_calories -= matched_item->get_calories();
                                         std::cout << "You gave the elf " << item_name << "! Calories left: " << required_calories << std::endl;
                                 } else {
