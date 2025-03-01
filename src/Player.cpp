@@ -8,12 +8,23 @@ Location* Player::get_current_location() const {
 }
 
 Item* Player::find_item(const std::string& name) {
+    Item* best_match = nullptr;
+
     for (auto& item : inventory) {
-        if (item.get_name() == name) {
+        std::string item_name_lower = item.get_name();
+        for (char& c : item_name_lower) c = std::tolower(c);
+
+        std::string search_lower = name;
+        for (char& c : search_lower) c = std::tolower(c);
+
+        if (item_name_lower.rfind(search_lower, 0) == 0) {
             return &item;
         }
+        if (item_name_lower.find(search_lower) != std::string::npos && !best_match) {
+            best_match = &item;
+        }
     }
-    return nullptr;
+    return best_match;
 }
 
 void Player::set_current_location(Location* location) {
@@ -44,11 +55,18 @@ void Player::add_weight(float weight) {
 }
 
 void Player::remove_item(const std::string& name) {
-    for (auto item = inventory.begin(); item != inventory.end();) { // iterate through player inventory
-        if (item->get_name() == name ) {
-            item = inventory.erase(item);
+    for (auto iterate = inventory.begin(); iterate != inventory.end();) {
+        std::string item_name_lower = iterate->get_name();
+        for (char& c : item_name_lower) c = std::tolower(c);
+        
+        std::string search_lower = name;
+        for (char& c : item_name_lower) c = std::tolower(c);
+
+        if (item_name_lower == search_lower) {
+            iterate = inventory.erase(iterate);
+            return;
         } else {
-            ++item;
+            ++iterate;
         }
     }
 }

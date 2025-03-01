@@ -118,18 +118,18 @@ void Game::take(std::vector<std::string> target) {
             return;
         } 
         
-        std::string userInput;
+        std::string user_input;
         for (const auto& word : target) { // for loop that grabs all tokens in item
-                if (!userInput.empty()) {
-                        userInput += " ";
+                if (!user_input.empty()) {
+                        user_input += " ";
                 }
-                userInput += word; // puts tokens into one string
+                user_input += word; // puts tokens into one string
         }
 
-        for (char& c : userInput) c = std::tolower(c);
+        for (char& c : user_input) c = std::tolower(c);
 
         Location* current_location = player.get_current_location();
-        Item* matched_item = current_location->find_item(userInput);
+        Item* matched_item = current_location->find_item(user_input);
                 
         if (matched_item) {
             float new_weight = player.get_weight() + matched_item->get_weight();
@@ -146,7 +146,7 @@ void Game::take(std::vector<std::string> target) {
         
             std::cout << "You took the " << itemCopy.get_name() << "." << std::endl;
         } else {
-                std::cout << userInput << " is not in this location." << std::endl;
+                std::cout << user_input << " is not in this location." << std::endl;
         }
 }
 
@@ -162,22 +162,25 @@ void Game::give(std::vector<std::string> target) {
                         }
                         item_name += word; // puts tokens into one string
                 }
-                
+                for (char& c : item_name) c = std::tolower(c);
+
                 Location* current_location = player.get_current_location(); // get current location
-                Item* item = player.find_item(item_name); // looks for item in current location
-                if (item) {
+                Item* matched_item = player.find_item(item_name); // looks for item in current location
+                
+                if (matched_item) {
                         player.remove_item(item_name);
-                        current_location ->add_item(*item);
-                        player.add_weight(-item->get_weight());
+                        current_location ->add_item(*matched_item);
+                        player.add_weight(-matched_item->get_weight());
                         std::cout << "You put the " << item_name << " in " << current_location->get_name() << std::endl;
 
                         if (current_location->get_name() == "The Forest") {
-                                if (item->edible()) {
-                                        required_calories -= item->get_calories();
+                                if (matched_item->edible()) {
+                                        required_calories -= matched_item->get_calories();
                                         std::cout << "You gave the elf " << item_name << "! Calories left: " << required_calories << std::endl;
                                 } else {
-                                        player.set_current_location(random_location());
-                                        std::cout << "The elf is pissed off. He sent you to " << current_location << std::endl;
+                                        Location* new_location = random_location();
+                                        player.set_current_location(new_location);
+                                        std::cout << "The elf is pissed off. He sent you to " << new_location->get_name() << std::endl;
                                 }
                         }
                 } else {
