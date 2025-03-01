@@ -32,7 +32,7 @@ private:
     void look(std::vector<std::string> args);
     void quit(std::vector<std::string> args);
     void trade(std::vector<std::string> args); 
-    void custom_command_2(std::vector<std::string> args); // Placeholder
+    void dance(std::vector<std::string> args);
 
 public:
     Game();

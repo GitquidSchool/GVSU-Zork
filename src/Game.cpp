@@ -21,7 +21,7 @@ void Game::setup_commands() {
         commands["look"] = [this](std::vector<std::string> args) { look(args); };
         commands["quit"] = [this](std::vector<std::string> args) { quit(args); };
         commands["trade"] = [this](std::vector<std::string> args) { trade(args); };
-        //commands["custom2"] = [this](std::vector<std::string> args) { custom_command_2(args); }; // Placeholder
+        commands["dance"] = [this](std::vector<std::string> args) { dance(args); };
 }
 
 void Game::show_help(std::vector<std::string>) {
@@ -42,7 +42,7 @@ void Game::show_help(std::vector<std::string>) {
 
         // Order of commands
         std::vector<std::string> orderedCommands = 
-        {"help", "meet", "take", "give", "inventory", "look", "go", "trade", "quit"};
+        {"help", "meet", "take", "give", "inventory", "look", "go", "trade", "dance", "quit"};
 
         for (const std::string& command : orderedCommands) {
              if (commands.find(command) != commands.end()) {
@@ -365,6 +365,47 @@ void Game::trade(std::vector<std::string> target) {
      }
 }
 
+void Game::dance(std::vector<std::string> args) {
+        std::srand(std::time(0));
+        std::vector<std::string> dances = {
+                "hitting the dougie",
+                "doing the cha-cha slide",
+                "doing the perculator",
+                "doing the bachata",
+                "doing the macarena",
+                "doing the charlie brown",
+                "hitting the griddy",
+                "doing the orange justice",
+                "doing the robot",
+                "break dancing",
+                "hitting the folks",
+                "doing the floss"
+        };
+
+        int random_dance = std::rand() % dances.size(); // select random dance in dances
+        std::string dance_picked = dances[random_dance]; // store random dance chosen
+
+        std::vector<std::string> responses = {
+                "judged you",
+                "joined in",
+                "laughed",
+                "watched you",
+                "ignored you",
+                "starting cheering"
+        };
+
+        int random_response = std::rand() % responses.size(); // select random npc response
+        std::string response_picked = responses[random_response]; // store random response chosen
+
+        Location* current_location = player.get_current_location(); // get current location
+        const std::vector<NPC*>& npcs = current_location->get_npcs(); // get npcs in location
+
+        int random_npc = std::rand() % npcs.size(); // select random npc in location
+        const NPC& npc = *npcs[random_npc]; // get reference to npc chosen
+
+        std::cout << "You are " << dance_picked << " in " << current_location->get_name() << ", " << npc.get_name() << " " << response_picked << std::endl;
+}
+
 void Game::create_world() {
         // =============================
         // 1. Define Locations
@@ -660,6 +701,7 @@ void Game::game_loop() {
 
 
 Location* Game::random_location() {
+        std::srand(time(0));
         int index = std::rand() % locations.size();
         return &locations[index];
 }
