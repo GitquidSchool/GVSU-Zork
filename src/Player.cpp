@@ -50,6 +50,10 @@ void Player::show_inventory() const {
     }
 }
 
+std::vector<Item>& Player::get_inventory() {
+    return inventory;
+}
+
 void Player::add_weight(float weight) {
     carried_weight += weight;
 }

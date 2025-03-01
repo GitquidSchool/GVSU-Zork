@@ -26,8 +26,12 @@ void Game::setup_commands() {
 
 void Game::show_help(std::vector<std::string>) {
         std::time_t current_time = std::time(nullptr); // gets time
-        std::tm local_time;
-        localtime_s(&local_time, &current_time); // Converts to local
+        struct tm local_time;
+        #ifdef _WIN32
+                localtime_s(&local_time, &current_time); // Windows-specific
+        #else
+                localtime_r(&current_time, &local_time); // POSIX-specific
+        #endif
 
         // format HH:MM and print 
         char time_str[6];  // 5 chars + null terminator
@@ -259,32 +263,6 @@ void Game::go(std::vector<std::string> target) {
         }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void Game::show_items(std::vector<std::string> args) {
         std::cout << "Carried Weight: " << player.get_weight() << " lbs" << std::endl;
         player.show_inventory(); 
@@ -313,18 +291,17 @@ void Game::trade(std::vector<std::string> target) {
         }
 
         std::string npcInput = target[0]; 
-
         for (char& c : npcInput) c = std::tolower(c);
 
         Location* current_location = player.get_current_location();
         NPC* selected_npc = nullptr;
 
+        // Search for NPC
         for (NPC* npc : current_location->get_npcs()) {
              std::istringstream iss(npc->get_name());
              std::string firstName;
              iss >> firstName; 
 
-             std::string originalName = firstName;
              std::string firstNameLower = firstName;
              for (char& c : firstNameLower) c = std::tolower(c);
         
@@ -334,302 +311,321 @@ void Game::trade(std::vector<std::string> target) {
              }
         }
 
+        // Check if NPC is at location
         if (!selected_npc) {
             std::cout << npcInput << " is not in this location." << std::endl;
             return;
         }
 
-        std::cout << selected_npc->get_name() << ": \"What would you have to trade?\"" << std::endl;
+        std::cout << selected_npc->get_name() << ": What would you like to trade?" << std::endl;
         std::string userItemInput;
         std::getline(std::cin, userItemInput);
-
         for (char& c : userItemInput) c = std::tolower(c);
 
-        std::string wantedItem = selected_npc->get_wanted_item();
-        std::string wantedItemLower = wantedItem;
-        for (char& c : wantedItemLower) c = std::tolower(c);
+        // Adjusted item search to allow partial matching
+        Item* playerItem = nullptr;
+        for (Item& item : player.get_inventory()) {
+                std::string itemNameLower = item.get_name();
+                for (char& c : itemNameLower) c = std::tolower(c);
 
-        if (wantedItemLower.find(userItemInput) != std::string::npos) {
-                Item reward = selected_npc->get_trade_reward();
-        
-                // Check if the player has the item (case-insensitive check)
-                //for (Item& item : player.get_inventory()) {
-                    //std::string itemNameLower = item.get_name();
-                    //for (char& c : itemNameLower) c = std::tolower(c);
-        
-                    //if (itemNameLower.find(userItemInput) != std::string::npos) {
-                        // Remove item from inventory and give the reward
-                       // player.remove_item_from_inventory(item.get_name());
-                        player.add_item_to_inventory(reward);
-        
-                        //std::cout << selected_npc->get_name() << ": \"Thanks for the " << item.get_name() << "! Here, take this.\"" << std::endl;
-                        std::cout << "You received " << reward.get_name() << "." << std::endl;
-                        return;
-                    }
-                
+                if (itemNameLower.find(userItemInput) != std::string::npos) {
+                playerItem = &item;
+                break; // Stop at the first valid match
+                }
+        }
+
+    if (!playerItem) {
+        std::cout << "You don't have that item to trade." << std::endl;
+        return;
+    }
+
+    std::string wantedItem = selected_npc->get_wanted_item();
+    std::string wantedItemLower = wantedItem;
+    for (char& c : wantedItemLower) c = std::tolower(c);
+
+    std::string playerItemLower = playerItem->get_name();
+    for (char& c : playerItemLower) c = std::tolower(c);
+
+    // Updated matching logic to correctly compare player input and wanted item
+    if (wantedItemLower.find(playerItemLower) != std::string::npos || playerItemLower.find(wantedItemLower) != std::string::npos) {
+        Item reward = selected_npc->get_trade_reward();
+        player.remove_item(playerItem->get_name()); // Remove Item for trade
+        player.add_weight(-playerItem->get_weight()); // Update player weight after remove
+        player.add_item_to_inventory(reward); // Add reward to player
+        player.add_weight(reward.get_weight()); // Update weight of reward
+        std::cout << selected_npc->get_name() << ": Thanks for the " << playerItem->get_name() << "! Here, take this." << std::endl;        std::cout << "You received " << reward.get_name() << "." << std::endl;
+    } else {
+        std::cout << selected_npc->get_name() << ": \"I don't want that.\"" << std::endl;
+    }
 }
 
 void Game::create_world() {
-    // =============================
-    // 1. Define Locations
-    // =============================
-    locations.push_back(Location("The Commons", "A busy dining hall where students grab questionable buffet food and leave behind messy trays.")); 
-    locations.push_back(Location("The Field House", "A sports complex with courts, a climbing wall, and athletic facilities.")); 
-    locations.push_back(Location("The Recreation Center", "A spacious fitness center with equipment, courts, and locker rooms for all your recreational needs."));
-    locations.push_back(Location("Mackinac Hall", "A building with classrooms for math, science, and history, along with computer labs, study rooms, and a snack shop."));
-    locations.push_back(Location("Lake Michigan Hall", "A humanities building with classrooms, faculty offices, a store, a food spot, and quiet study areas."));
-    locations.push_back(Location("Kindschi Hall", "A sleek science building with labs, classrooms, and lecture halls for STEM students."));
-    locations.push_back(Location("Manitou Hall", "A multi-purpose building with classrooms, offices, and student services in a central campus location."));
-    locations.push_back(Location("Padnos Hall", "A science-focused building with labs, classrooms, and research spaces for biology, chemistry, and environmental science."));  
-    locations.push_back(Location("Kirkoff Center", "A lively student hub with dining, meeting rooms, lounges, and a theater for all things campus life."));
-    locations.push_back(Location("The Forest", "A dark mysterious forest where a powerful elf resides."));
+        // =============================
+        // 1. Define Locations
+        // =============================
+        locations.push_back(Location("The Commons", "A busy dining hall where students grab questionable buffet food and leave behind messy trays.")); 
+        locations.push_back(Location("The Field House", "A sports complex with courts, a climbing wall, and athletic facilities.")); 
+        locations.push_back(Location("The Recreation Center", "A spacious fitness center with equipment, courts, and locker rooms for all your recreational needs."));
+        locations.push_back(Location("Mackinac Hall", "A building with classrooms for math, science, and history, along with computer labs, study rooms, and a snack shop."));
+        locations.push_back(Location("Lake Michigan Hall", "A humanities building with classrooms, faculty offices, a store, a food spot, and quiet study areas."));
+        locations.push_back(Location("Kindschi Hall", "A sleek science building with labs, classrooms, and lecture halls for STEM students."));
+        locations.push_back(Location("Manitou Hall", "A multi-purpose building with classrooms, offices, and student services in a central campus location."));
+        locations.push_back(Location("Padnos Hall", "A science-focused building with labs, classrooms, and research spaces for biology, chemistry, and environmental science."));  
+        locations.push_back(Location("Kirkoff Center", "A lively student hub with dining, meeting rooms, lounges, and a theater for all things campus life."));
+        locations.push_back(Location("The Forest", "A dark mysterious forest where a powerful elf resides."));
 
 
-    // Store pointers to locations for easy reference
-    Location* theCommons = &locations[0]; 
-    Location* theFieldHouse = &locations[1];
-    Location* theRecreationCenter = &locations[2];
-    Location* mackinacHall = &locations[3];
-    Location* lakeMichiganHall = &locations[4];
-    Location* kindschiHall = &locations[5];
-    Location* manitouHall = &locations[6];
-    Location* padnosHall = &locations[7];
-    Location* kirkoffCenter = &locations[8];
-    Location* theForest = &locations[9];
+        // Store pointers to locations for easy reference
+        Location* theCommons = &locations[0]; 
+        Location* theFieldHouse = &locations[1];
+        Location* theRecreationCenter = &locations[2];
+        Location* mackinacHall = &locations[3];
+        Location* lakeMichiganHall = &locations[4];
+        Location* kindschiHall = &locations[5];
+        Location* manitouHall = &locations[6];
+        Location* padnosHall = &locations[7];
+        Location* kirkoffCenter = &locations[8];
+        Location* theForest = &locations[9];
 
-    // =============================
-    // 2. Define NPCs
-    // =============================
-    NPC* stanley = new NPC("Stanley the Overworked Cashier","A tired student worker who barely acknowledges customers.",
-            {"Next in line please.",
-             "Swipe your ID.",
-             "Enjoy your meal... or don't. I don't care."});
-    NPC* marla = new NPC("Marla the Chef","A strict cook who takes pride in her mass-produced food.",
-            {"If you don't like it, cook for yourself next time.",
-            "That lasagna took hours. You better appreciate it.",
-            "Take all you want, but don't waste it."});
+        // =============================
+        // 2. Define NPCs
+        // =============================
+        NPC* stanley = new NPC("Stanley the Overworked Cashier","A tired student worker who barely acknowledges customers.",
+                {"Next in line please.",
+                "Swipe your ID.",
+                "Enjoy your meal... or don't. I don't care."});
+        NPC* marla = new NPC("Marla the Chef","A strict cook who takes pride in her mass-produced food.",
+                {"If you don't like it, cook for yourself next time.",
+                "That lasagna took hours. You better appreciate it.",
+                "Take all you want, but don't waste it."});
 
-    NPC* anderson = new NPC("Anderson the Coach","A lunatic coach who spends most of his time yelling at players.",
-            {"Hustle up!",
-             "You're only as good as your last play!",
-             "Keep your head in the game!."});
-    NPC* chloe = new NPC("Chloe the Workout Enthusiast", "A high-energy student always looking for the next fitness challenge.",
-            {"No pain, no gain!",
-             "Hydration is key—did you drink enough water today?",
-             "Just one more rep! You got this!"});
-    
-    NPC* milo = new NPC("Milo the Equipment Tinkerer", "A student always fixing gym equipment, convinced the machines have hidden secrets.",
-            {"The weights whisper when no one's looking.", 
-             "These machines are plotting something big.", 
-             "One small tweak, and your workout could change forever."});
-    NPC* aurora = new NPC("Aurora the Snack Philosopher", "A laid-back student who ponders the meaning behind every snack.",
-            {"A granola bar isn't just a snack!", 
-             "Every stale cookie tells a story of endurance.", 
-             "Remember, sometimes the best workout is a thoughtful pause for a snack."});
+        NPC* anderson = new NPC("Anderson the Coach","A lunatic coach who spends most of his time yelling at players.",
+                {"Hustle up!",
+                "You're only as good as your last play!",
+                "Keep your head in the game!."});
+        NPC* chloe = new NPC("Chloe the Workout Enthusiast", "A high-energy student always looking for the next fitness challenge.",
+                {"No pain, no gain!",
+                "Hydration is key—did you drink enough water today?",
+                "Just one more rep! You got this!"});
+        
+        NPC* milo = new NPC("Milo the Equipment Tinkerer", "A student always fixing gym equipment, convinced the machines have hidden secrets.",
+                {"The weights whisper when no one's looking.", 
+                "These machines are plotting something big.", 
+                "One small tweak, and your workout could change forever."});
+        NPC* aurora = new NPC("Aurora the Snack Philosopher", "A laid-back student who ponders the meaning behind every snack.",
+                {"A granola bar isn't just a snack!", 
+                "Every stale cookie tells a story of endurance.", 
+                "Remember, sometimes the best workout is a thoughtful pause for a snack."});
 
-    NPC* lana = new NPC("Lana the Lounge Lurker", "A student who's always lounging around campus, avoiding class with a new excuse.",
-            {"Nap studies should be a real major.", 
-             "Procrastination is an art form.", 
-             "If you skip class, no homework!"});
-    NPC* todd = new NPC("Todd the Tour Guide", "Overenthusiastic but easily distracted, he gives tours but often forgets where he's going.",
-            {"Welcome to campus—wait, where are we again?", 
-             "Here's the library... I think.", 
-             "Best pizza is... somewhere around here."});
+        NPC* lana = new NPC("Lana the Lounge Lurker", "A student who's always lounging around campus, avoiding class with a new excuse.",
+                {"Nap studies should be a real major.", 
+                "Procrastination is an art form.", 
+                "If you skip class, no homework!"});
+        NPC* todd = new NPC("Todd the Tour Guide", "Overenthusiastic but easily distracted, he gives tours but often forgets where he's going.",
+                {"Welcome to campus—wait, where are we again?", 
+                "Here's the library... I think.", 
+                "Best pizza is... somewhere around here."});
 
-    NPC* james = new NPC("James the Forever Student", "James has been here for at least a decade, switching majors every couple years.",
-            {"Oh, you're new? I was new... like 12 years ago.", 
-             "Thinking of switching to Classics. Or Biology. Or both.", 
-             "I have enough credits to graduate, but what's the rush?"});
-    
-    NPC* lenz = new NPC("Lenz the Over-Caffeinated Professor", "Runs purely on espresso and questionable enthusiasm. Speaks at 2x speed.",
-            {"Science waits for no one—except grant funding.", 
-             "Ask questions! Just not during my coffee break.", 
-             "That reaction won't explode... probably."});
-    NPC* sam = new NPC("Sam the Perpetual Lab Student", "Has been in the lab so long, they might have tenure. Smells faintly of ethanol.",
-            {"What day is it? Lab days don't count.", 
-             "If I leave now, I'll ruin my no-sunlight streak.", 
-             "I made soap again instead of my experiment..."});
-    
-    NPC* greg = new NPC("Greg the Over-Dramatic Student", "A business major who always has a dramatic story to tell.",
-            {"One more email and I'll explode!", 
-             "My coffee's cold. Today is doomed.", 
-             "I tried studying, but the universe had other plans."});
-    NPC* debbie = new NPC("Debbie the Bookstore Cat Lady", "A student who spends more time at the campus bookstore than in actual classes.",
-            {"I've read this book ten times—it's so cozy!", 
-             "The bookstore cat understands me.", 
-             "You should read this… unless you prefer textbooks!"});
+        NPC* james = new NPC("James the Forever Student", "James has been here for at least a decade, switching majors every couple years.",
+                {"Oh, you're new? I was new... like 12 years ago.", 
+                "Thinking of switching to Classics. Or Biology. Or both.", 
+                "I have enough credits to graduate, but what's the rush?"});
+        
+        NPC* lenz = new NPC("Lenz the Over-Caffeinated Professor", "Runs purely on espresso and questionable enthusiasm. Speaks at 2x speed.",
+                {"Science waits for no one—except grant funding.", 
+                "Ask questions! Just not during my coffee break.", 
+                "That reaction won't explode... probably."});
+        NPC* sam = new NPC("Sam the Perpetual Lab Student", "Has been in the lab so long, they might have tenure. Smells faintly of ethanol.",
+                {"What day is it? Lab days don't count.", 
+                "If I leave now, I'll ruin my no-sunlight streak.", 
+                "I made soap again instead of my experiment..."});
+        
+        NPC* greg = new NPC("Greg the Over-Dramatic Student", "A business major who always has a dramatic story to tell.",
+                {"One more email and I'll explode!", 
+                "My coffee's cold. Today is doomed.", 
+                "I tried studying, but the universe had other plans."});
+        NPC* debbie = new NPC("Debbie the Bookstore Cat Lady", "A student who spends more time at the campus bookstore than in actual classes.",
+                {"I've read this book ten times—it's so cozy!", 
+                "The bookstore cat understands me.", 
+                "You should read this… unless you prefer textbooks!"});
 
-    NPC* spencer = new NPC("Spencer the Self-Proclaimed Artist", "A biology major who spends all his free time painting random objects around the building.",
-            {"This beaker is my masterpiece.", 
-             "It's not just a chair, it's the chair of despair.", 
-             "Painting photosynthesis is harder than it looks!"});
-    NPC* tina = new NPC("Tina the Tech Over-Explainer", "A computer science major who believes everyone wants to hear about her latest tech discovery.",
-            {"4 lines of Python can automate your life!", 
-             "I'm making an app—Uber for homework.", 
-             "Still using that phone? Let me show you how to root it!"});
+        NPC* spencer = new NPC("Spencer the Self-Proclaimed Artist", "A biology major who spends all his free time painting random objects around the building.",
+                {"This beaker is my masterpiece.", 
+                "It's not just a chair, it's the chair of despair.", 
+                "Painting photosynthesis is harder than it looks!"});
+        NPC* tina = new NPC("Tina the Tech Over-Explainer", "A computer science major who believes everyone wants to hear about her latest tech discovery.",
+                {"4 lines of Python can automate your life!", 
+                "I'm making an app—Uber for homework.", 
+                "Still using that phone? Let me show you how to root it!"});
 
-    NPC* matt = new NPC("Matt the Walking Calendar", "Knows every event happening on campus.",
-            {"Join the meeting—I got the day planned!", 
-             "I should make a Google Calendar for my Google Calendar.", 
-             "Gotta run to my 3:15! It's in 3 minutes!"});
-    NPC* lily = new NPC("Lily the Loud Study Group Leader", "Always organizing study groups.",
-            {"OK, let's break this down—EVERYONE GOT THEIR PENS?!", 
-             "The answer is obviously C—are we all clear?!?", 
-             "Can't focus, I'm too excited for finals!"});
+        NPC* matt = new NPC("Matt the Walking Calendar", "Knows every event happening on campus.",
+                {"Join the meeting—I got the day planned!", 
+                "I should make a Google Calendar for my Google Calendar.", 
+                "Gotta run to my 3:15! It's in 3 minutes!"});
+        NPC* lily = new NPC("Lily the Loud Study Group Leader", "Always organizing study groups.",
+                {"OK, let's break this down—EVERYONE GOT THEIR PENS?!", 
+                "The answer is obviously C—are we all clear?!?", 
+                "Can't focus, I'm too excited for finals!"});
 
-    NPC* bernard = new NPC("Bernard the Watchful", "An all-powerful elf with an enormous appetite.",
-            {"Have you gathered enough food yet?",
-             "The school's survival depends on your success. Keep searching!",
-             "Your journey is not over until I am well-fed."});
+        NPC* bernard = new NPC("Bernard the Watchful", "An all-powerful elf with an enormous appetite.",
+                {"Have you gathered enough food yet?",
+                "The school's survival depends on your success. Keep searching!",
+                "Your journey is not over until I am well-fed."});
 
-    // =============================
-    // 3. Define Items
-    // =============================
-    Item clearCup("Clear Plastic Cup", "A sturdy plastic cup with some residue left inside.", 0, 1.5); 
-    Item energyBar("Energy Bar", "A small partially unwrapped protein bar left on a bleacher.", 25, 1.0); 
-    Item pearSlice("Half-Eaten Pear Slice", "A single Pear slice with a bite taken out. It's starting to brown.", 10, 0.5);
-    Item breadRoll("Unfinished Bread Roll", "A soft dinner roll with one bite taken out. Slightly stale but edible.", 45, 2.0);
-    
-    Item banana("Banana", "A ripe banana, slightly bruised but still good to eat.", 35, 0.5);
-    Item trailMix("Bag of Trail Mix", "A small, resealable bag of trail mix filled with nuts and dried fruit.", 45, 1.5);
-    Item proteinPowder("Box of Protein Powder", "A box of protein powder, half-open and empty.", 0, 3.0);
+        // =============================
+        // 3. Define Items
+        // =============================
+        Item clearCup("Clear Plastic Cup", "A sturdy plastic cup with some residue left inside.", 0, 1.5); 
+        Item sodaCan("Unbranded Soda Can", "A full can of soda with the branding rubbed away.", 20, 1.0);
+        marla->set_trade("Clear Plastic Cup", sodaCan);
+        Item energyBar("Energy Bar", "A small partially unwrapped protein bar left on a bleacher.", 25, 1.0); 
+        Item pearSlice("Half-Eaten Pear Slice", "A single Pear slice with a bite taken out. It's starting to brown.", 10, 0.5);
+        Item breadRoll("Unfinished Bread Roll", "A soft dinner roll with one bite taken out. Slightly stale but edible.", 45, 2.0);
+        
+        Item banana("Banana", "A ripe banana, slightly bruised but still good to eat.", 35, 0.5);
+        Item trailMix("Bag of Trail Mix", "A small, resealable bag of trail mix filled with nuts and dried fruit.", 45, 1.5);
+        Item proteinPowder("Box of Protein Powder", "A box of protein powder, half-open and empty.", 0, 3.0);
 
-    Item staleCookie("Stale Protein Cookie", "An enormous stale cookie that has hardened over time.", 10, 1.0);
-    Item yogurtCup("Diet Yogurt Cup", "A large cup of fat-free, low-calorie yogurt from the snack machine.", 15, 1.5);
-    Item weightPlate("Rusted Weight Plate", "A heavily rusted weight plate, its surface pitted and corroded from years of neglect.", 0, 5.0);
+        Item staleCookie("Stale Protein Cookie", "An enormous stale cookie that has hardened over time.", 10, 1.0);
+        Item yogurtCup("Diet Yogurt Cup", "A large cup of fat-free, low-calorie yogurt from the snack machine.", 15, 1.5);
+        Item weightPlate("Rusted Weight Plate", "A heavily rusted weight plate, its surface pitted and corroded from years of neglect.", 0, 5.0);
+        Item proteinBar("Large Protein Bar", "A protein bar that's been crushed in a backpack.", 30, 1.0);
+        //milo->set_trade("Rusted Weight Plate", proteinBar);
 
-    Item textbook("Dusty Textbook", "An old textbook filled with scribbled notes from past classes.", 0, 3.0);
-    Item smushedMuffin("Smushed Muffin", "A muffin that's been squished in a backpack for far too long.", 35, 2.0);
-    Item appleSlices("Packaged Apple Slices", "A pre-packaged container of apple slices from the campus store.", 25, 2.5);
+        Item textbook("Dusty Textbook", "An old textbook filled with scribbled notes from past classes.", 0, 3.0);
+        Item smushedMuffin("Smushed Muffin", "A muffin that's been squished in a backpack for far too long.", 35, 2.0);
+        Item appleSlices("Packaged Apple Slices", "A pre-packaged container of apple slices from the campus store.", 25, 2.5);
 
-    Item pretzels("Forgotten Bag of Pretzels", "Stale but still crunchable. Found wedged under a table leg.", 25, 2.5);
-    Item mysteryCandy("Mystery-Flavored Hard Candy", "A single candy with a faded wrapper. It could be anything.", 30, 1.0);
+        Item pretzels("Forgotten Bag of Pretzels", "Stale but still crunchable. Found wedged under a table leg.", 25, 2.5);
+        Item mysteryCandy("Mystery-Flavored Hard Candy", "A single candy with a faded wrapper. It could be anything.", 30, 1.0);
 
-    Item labNotebook("Half-Used Lab Notebook", "The first few pages are filled with equations. The rest is doodles and coffee stains.", 0, 2.0);
-    Item safetyGoggles("Crushed Safety Goggles", "Clearly failed their last experiment. Now they sit here, a tragic reminder.", 0, 1.5);
-    Item bunsenTubing("Burnt-Out Bunsen Burner Tubing", "Someone turned the gas up way too high. Now it's just a melted mess.", 0, 2.5);
-    Item labCoat("Abandoned Lab Coat", "Slightly singed. Smells like chemicals. Probably left behind for a reason.", 0, 2.0);
+        Item labNotebook("Half-Used Lab Notebook", "The first few pages are filled with equations. The rest is doodles and coffee stains.", 0, 2.0);
+        Item safetyGoggles("Crushed Safety Goggles", "Clearly failed their last experiment. Now they sit here, a tragic reminder.", 0, 1.5);
+        Item bunsenTubing("Burnt-Out Bunsen Burner Tubing", "Someone turned the gas up way too high. Now it's just a melted mess.", 0, 2.5);
+        Item labCoat("Abandoned Lab Coat", "Slightly singed. Smells like chemicals. Probably left behind for a reason.", 0, 2.0);
 
-    Item staleBagel("Stale Bagel", "Hard as a rock, but still has a faint bagel flavor if you squint really hard.", 15, 1.5);
-    Item backpack("Scuffed Leather Backpack", "Well-worn but still functional. Looks like someone gave up and left this behind.", 0, 4.0);
-    Item calculator("Misplaced Calculator", "It's probably broken, but it could be useful for someone.", 0, 2.0);
-    Item candyWrapper("Candy Bar Wrapper", "The candy's gone, but the wrapper is a solid reminder of someone's poor life choices.", 15, 1.0);
+        Item staleBagel("Stale Bagel", "Hard as a rock, but still has a faint bagel flavor if you squint really hard.", 15, 1.5);
+        Item backpack("Scuffed Leather Backpack", "Well-worn but still functional. Looks like someone gave up and left this behind.", 0, 4.0);
+        Item calculator("Misplaced Calculator", "It's probably broken, but it could be useful for someone.", 0, 2.0);
+        Item candyWrapper("Candy Bar Wrapper", "The candy's gone, but the wrapper is a solid reminder of someone's poor life choices.", 15, 1.0);
 
-    Item energyDrink("Energy Drink", "Half-empty but still a kick of energy.", 20, 2.0);
-    Item peanutButter("Peanut Butter Packet", "A little sticky—probably thanks to students who didn't close it properly.", 30, 1.0);
-    Item sandwich("Half-Eaten Sandwich", "A mystery sandwich wrapped in plastic.", 50, 3.0);
-    Item donut("Glazed Donut with a Bite Missing", "Who takes just one bite and leaves the rest? The world may never know.", 40, 2.5);
+        Item energyDrink("Energy Drink", "Half-empty but still a kick of energy.", 20, 2.0);
+        Item peanutButter("Peanut Butter Packet", "A little sticky—probably thanks to students who didn't close it properly.", 30, 1.0);
+        Item sandwich("Half-Eaten Sandwich", "A mystery sandwich wrapped in plastic.", 50, 3.0);
+        Item donut("Glazed Donut with a Bite Missing", "Who takes just one bite and leaves the rest? The world may never know.", 40, 2.5);
 
-    Item stickyNotes("Sticky Note Pad", "Mostly empty, with a few motivational quotes from a stressed-out student.", 0, 0.5);
-    Item pandaEntree("Half-Eaten Panda Express Entree", "Someone left this on a table, but it's a mystery how much of it is still edible.", 35, 1.0);
-    Item studyGuide("Forgotten Study Guide", "It was supposed to be a lifesaver for your final exam.", 0, 1.5);
+        Item stickyNotes("Sticky Note Pad", "Mostly empty, with a few motivational quotes from a stressed-out student.", 0, 0.5);
+        Item pandaEntree("Half-Eaten Panda Express Entree", "Someone left this on a table, but it's a mystery how much of it is still edible.", 35, 1.0);
+        Item studyGuide("Forgotten Study Guide", "It was supposed to be a lifesaver for your final exam.", 0, 1.5);
 
 
-    // =============================
-    // 4. Assign Items & NPCs to Locations
-    // =============================
-    theCommons->add_item(clearCup);
-    theCommons->add_item(energyBar);
-    theCommons->add_item(pearSlice);
-    theCommons->add_item(breadRoll);
-    theCommons->add_npc(stanley);
-    theCommons->add_npc(marla);
+        // =============================
+        // 4. Assign Items & NPCs to Locations
+        // =============================
+        theCommons->add_item(clearCup);
+        theCommons->add_item(energyBar);
+        theCommons->add_item(pearSlice);
+        theCommons->add_item(breadRoll);
+        theCommons->add_npc(stanley);
+        theCommons->add_npc(marla);
 
-    theFieldHouse->add_item(banana);
-    theFieldHouse->add_item(trailMix);
-    theFieldHouse->add_item(proteinPowder);
-    theFieldHouse->add_npc(anderson);
-    theFieldHouse->add_npc(chloe);
+        theFieldHouse->add_item(banana);
+        theFieldHouse->add_item(trailMix);
+        theFieldHouse->add_item(proteinPowder);
+        theFieldHouse->add_npc(anderson);
+        theFieldHouse->add_npc(chloe);
 
-    theRecreationCenter->add_item(staleCookie);
-    theRecreationCenter->add_item(yogurtCup);
-    theRecreationCenter->add_item(weightPlate);
-    theRecreationCenter->add_npc(milo);
-    theRecreationCenter->add_npc(aurora);
+        theRecreationCenter->add_item(staleCookie);
+        theRecreationCenter->add_item(yogurtCup);
+        theRecreationCenter->add_item(weightPlate);
+        theRecreationCenter->add_npc(milo);
+        theRecreationCenter->add_npc(aurora);
 
-    mackinacHall->add_item(textbook);
-    mackinacHall->add_item(smushedMuffin);
-    mackinacHall->add_item(appleSlices);
-    mackinacHall->add_npc(lana);
-    mackinacHall->add_npc(todd);
+        mackinacHall->add_item(textbook);
+        mackinacHall->add_item(smushedMuffin);
+        mackinacHall->add_item(appleSlices);
+        mackinacHall->add_npc(lana);
+        mackinacHall->add_npc(todd);
 
-    lakeMichiganHall->add_item(pretzels);
-    lakeMichiganHall->add_item(mysteryCandy);
-    lakeMichiganHall->add_npc(james);
+        lakeMichiganHall->add_item(pretzels);
+        lakeMichiganHall->add_item(mysteryCandy);
+        lakeMichiganHall->add_npc(james);
 
-    kindschiHall->add_item(labNotebook);
-    kindschiHall->add_item(safetyGoggles);
-    kindschiHall->add_item(bunsenTubing);
-    kindschiHall->add_item(labCoat);
-    kindschiHall->add_npc(lenz);
-    kindschiHall->add_npc(sam);
+        kindschiHall->add_item(labNotebook);
+        kindschiHall->add_item(safetyGoggles);
+        kindschiHall->add_item(bunsenTubing);
+        kindschiHall->add_item(labCoat);
+        kindschiHall->add_npc(lenz);
+        kindschiHall->add_npc(sam);
 
-    manitouHall->add_item(staleBagel);
-    manitouHall->add_item(backpack);
-    manitouHall->add_item(calculator);
-    manitouHall->add_item(candyWrapper);
-    manitouHall->add_npc(greg);
-    manitouHall->add_npc(debbie);
+        manitouHall->add_item(staleBagel);
+        manitouHall->add_item(backpack);
+        manitouHall->add_item(calculator);
+        manitouHall->add_item(candyWrapper);
+        manitouHall->add_npc(greg);
+        manitouHall->add_npc(debbie);
 
-    padnosHall->add_item(energyDrink);
-    padnosHall->add_item(peanutButter);
-    padnosHall->add_item(sandwich);
-    padnosHall->add_item(donut);
-    padnosHall->add_npc(spencer);
-    padnosHall->add_npc(tina);
-    
-    kirkoffCenter->add_item(stickyNotes);
-    kirkoffCenter->add_item(pandaEntree);
-    kirkoffCenter->add_item(studyGuide);
-    kirkoffCenter->add_npc(matt);
-    kirkoffCenter->add_npc(lily);
+        padnosHall->add_item(energyDrink);
+        padnosHall->add_item(peanutButter);
+        padnosHall->add_item(sandwich);
+        padnosHall->add_item(donut);
+        padnosHall->add_npc(spencer);
+        padnosHall->add_npc(tina);
+        
+        kirkoffCenter->add_item(stickyNotes);
+        kirkoffCenter->add_item(pandaEntree);
+        kirkoffCenter->add_item(studyGuide);
+        kirkoffCenter->add_npc(matt);
+        kirkoffCenter->add_npc(lily);
 
-    theForest->add_npc(bernard);
+        theForest->add_npc(bernard);
 
-    // =============================
-    // 5. Define Location Connections
-    // =============================
-    theCommons->add_location("East", theForest);
-    theCommons->add_location("West", manitouHall);
-    theCommons->add_location("West", padnosHall);
+        // =============================
+        // 5. Define Location Connections
+        // =============================
+        theCommons->add_location("East", theForest);
+        theCommons->add_location("West", manitouHall);
+        theCommons->add_location("West", padnosHall);
 
-    theFieldHouse->add_location("East", mackinacHall);
-    theFieldHouse->add_location("South", theRecreationCenter);
+        theFieldHouse->add_location("East", mackinacHall);
+        theFieldHouse->add_location("South", theRecreationCenter);
 
-    theRecreationCenter->add_location("East", kindschiHall);
-    theRecreationCenter->add_location("North", theFieldHouse);
+        theRecreationCenter->add_location("East", kindschiHall);
+        theRecreationCenter->add_location("North", theFieldHouse);
 
-    mackinacHall->add_location("West", theFieldHouse);
-    mackinacHall->add_location("South", manitouHall);
+        mackinacHall->add_location("West", theFieldHouse);
+        mackinacHall->add_location("South", manitouHall);
 
-    lakeMichiganHall->add_location("East", padnosHall);
-    lakeMichiganHall->add_location("North", kindschiHall);   
-    
-    kindschiHall->add_location("West", theRecreationCenter);
-    kindschiHall->add_location("South", lakeMichiganHall);
-    kindschiHall->add_location("East", padnosHall);
+        lakeMichiganHall->add_location("East", padnosHall);
+        lakeMichiganHall->add_location("North", kindschiHall);   
+        
+        kindschiHall->add_location("West", theRecreationCenter);
+        kindschiHall->add_location("South", lakeMichiganHall);
+        kindschiHall->add_location("East", padnosHall);
 
-    manitouHall->add_location("North", mackinacHall);
-    manitouHall->add_location("South", padnosHall);
-    manitouHall->add_location("East", theCommons);
+        manitouHall->add_location("North", mackinacHall);
+        manitouHall->add_location("South", padnosHall);
+        manitouHall->add_location("East", theCommons);
 
-    padnosHall->add_location("West", kindschiHall);
-    padnosHall->add_location("West", lakeMichiganHall);
-    padnosHall->add_location("North", manitouHall);
-    padnosHall->add_location("South", kirkoffCenter);
-    padnosHall->add_location("East", theCommons);
+        padnosHall->add_location("West", kindschiHall);
+        padnosHall->add_location("West", lakeMichiganHall);
+        padnosHall->add_location("North", manitouHall);
+        padnosHall->add_location("South", kirkoffCenter);
+        padnosHall->add_location("East", theCommons);
 
-    kirkoffCenter->add_location("North", padnosHall);  
+        kirkoffCenter->add_location("North", padnosHall);  
 
-    theForest->add_location("West", theCommons);
-    
-    player.set_current_location(theForest); // Set starting location 
+        theForest->add_location("West", theCommons);
+        
+        player.set_current_location(theForest); // Set starting location 
 }
 
 void Game::start() {
-    std::cout << "Welcome to GVSU-Zork!" << std::endl;
-    std::cout << "What will you do?";
-    game_loop();
+        std::cout << "Welcome to GVSU-Zork!" << std::endl;
+        std::cout << "You are on a mission to save GVSU with the help of the powerful elf, Bernard." << std::endl;
+        std::cout << "You must gather 500 calories worth of food to feed Bernard and save the school." << std::endl;
+        std::cout << "What will you do?";
+        game_loop();
 }
 
 void Game::game_loop() {

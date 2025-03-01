@@ -18,6 +18,7 @@ public:
     void set_current_location(Location* location);
     void add_item_to_inventory(Item item);
     void show_inventory() const;
+    std::vector<Item>& get_inventory();
     void add_weight(float weight);
     void remove_item(const std::string& name);
     Item* find_item(const std::string& name);
