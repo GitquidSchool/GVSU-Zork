@@ -42,7 +42,7 @@ void Game::show_help(std::vector<std::string>) {
 
         // Order of commands
         std::vector<std::string> orderedCommands = 
-        {"help", "meet", "take", "give", "inventory", "look", "go", "quit"};
+        {"help", "meet", "take", "give", "inventory", "look", "go", "trade", "quit"};
 
         for (const std::string& command : orderedCommands) {
              if (commands.find(command) != commands.end()) {
@@ -326,38 +326,43 @@ void Game::trade(std::vector<std::string> target) {
         // Adjusted item search to allow partial matching
         Item* playerItem = nullptr;
         for (Item& item : player.get_inventory()) {
-                std::string itemNameLower = item.get_name();
-                for (char& c : itemNameLower) c = std::tolower(c);
+             std::string itemNameLower = item.get_name();
+             for (char& c : itemNameLower) c = std::tolower(c);
 
-                if (itemNameLower.find(userItemInput) != std::string::npos) {
-                playerItem = &item;
-                break; // Stop at the first valid match
-                }
+             if (itemNameLower.find(userItemInput) != std::string::npos) {
+                 playerItem = &item;
+                 break; // Stop at the first valid match
+             }
         }
 
-    if (!playerItem) {
-        std::cout << "You don't have that item to trade." << std::endl;
-        return;
-    }
+        if (!playerItem) {
+            std::cout << "You don't have that item to trade." << std::endl;
+            return;
+        }
 
-    std::string wantedItem = selected_npc->get_wanted_item();
-    std::string wantedItemLower = wantedItem;
-    for (char& c : wantedItemLower) c = std::tolower(c);
+        std::string wantedItem = selected_npc->get_wanted_item(); 
+        std::string wantedItemLower = wantedItem;
+        for (char& c : wantedItemLower) c = std::tolower(c);
 
-    std::string playerItemLower = playerItem->get_name();
-    for (char& c : playerItemLower) c = std::tolower(c);
-
+        std::string playerItemLower = playerItem->get_name();
+        for (char& c : playerItemLower) c = std::tolower(c);
+    
     // Updated matching logic to correctly compare player input and wanted item
-    if (wantedItemLower.find(playerItemLower) != std::string::npos || playerItemLower.find(wantedItemLower) != std::string::npos) {
+    if (wantedItemLower.find(playerItemLower) != std::string::npos ||
+        playerItemLower.find(wantedItemLower) != std::string::npos) {
         Item reward = selected_npc->get_trade_reward();
+
+        std::string rewardName = reward.get_name();
+        std::string tradedItem = playerItem->get_name();
         player.remove_item(playerItem->get_name()); // Remove Item for trade
         player.add_weight(-playerItem->get_weight()); // Update player weight after remove
         player.add_item_to_inventory(reward); // Add reward to player
         player.add_weight(reward.get_weight()); // Update weight of reward
-        std::cout << selected_npc->get_name() << ": Thanks for the " << playerItem->get_name() << "! Here, take this." << std::endl;        std::cout << "You received " << reward.get_name() << "." << std::endl;
-    } else {
+        std::cout << selected_npc->get_name() << ": Thanks for the " << tradedItem << "! Here, take this." << std::endl;   
+        std::cout << "You received " << rewardName << "." << std::endl;
+     } else {
         std::cout << selected_npc->get_name() << ": \"I don't want that.\"" << std::endl;
-    }
+     }
 }
 
 void Game::create_world() {
