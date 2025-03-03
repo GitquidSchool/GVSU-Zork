@@ -1,5 +1,9 @@
 #include "NPC.h"
 
+/**
+ * Ethan Umana: 3/2/2025
+ */
+
 // Constructor for the NPC class
 NPC::NPC(std::string name, std::string description, std::vector<std::string> messages)
     : name(name), description(description), messages(messages), message_index(0),

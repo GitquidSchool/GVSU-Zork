@@ -1,6 +1,9 @@
 #include "Item.h"
 #include <stdexcept>
 
+/**
+ * Ethan Umana: 3/2/2025
+ */
 
 Item::Item(const std::string &name, const std::string &description, int calories, float weight) {
     // Validate and assign attributes

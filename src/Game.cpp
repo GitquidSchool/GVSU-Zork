@@ -5,6 +5,10 @@
 #include <sstream>
 #include <limits>
 
+/**
+ * Ethan Umana: 3/2/2025
+ */
+
 Game::Game() : required_calories(500), in_progress(true) {
         setup_commands();
         create_world();
@@ -51,37 +55,6 @@ void Game::show_help(std::vector<std::string>) {
         }
 }
 
-// void Game::talk(std::vector<std::string> target) {
-//         if (target.empty()) { // if npc name not provided
-//             std::cout << "Who are you talking to?" << std::endl;
-//             return;
-//         }
-        
-//         Location* current_location = player.get_current_location(); // get current location
-//         std::string userInput = target[0]; // get typed name 
-
-//         for (char& c : userInput) c = std::tolower(c); // Convert to compare
-
-//         // Search for NPC 
-//         for (NPC* npc : current_location->get_npcs()) {
-//              std::istringstream iss(npc->get_name());
-//              std::string firstName;
-//              iss >> firstName; // Extract first name 
-
-//             // Store original first name
-//             std::string originalName = firstName;
-
-//             // Convert to compare
-//             std::string firstNameLower = firstName;
-//             for (char& c : firstNameLower) c = std::tolower(c);
-
-//             if (firstNameLower == userInput) {
-//                 std::cout << originalName << " says: " << npc->talk() << std::endl;
-//                 return;
-//             }
-//         }
-//         std::cout << userInput << " is not in this location." << std::endl;
-// }
 
 void Game::meet(std::vector<std::string> target) {
         if (target.empty()) { // if npc name not provided
@@ -90,7 +63,7 @@ void Game::meet(std::vector<std::string> target) {
         } 
 
         Location* current_location = player.get_current_location(); // get current location
-        std::string user_input = target[0]; // get typed name 
+        std::string user_input = target[0]; // get typed name
 
         for (char& c : user_input) c = std::tolower(c); // Convert to compare
         
@@ -132,17 +105,17 @@ void Game::take(std::vector<std::string> target) {
 
         for (char& c : user_input) c = std::tolower(c);
 
-        Location* current_location = player.get_current_location();
-        Item* matched_item = current_location->find_item(user_input);
+        Location* current_location = player.get_current_location();  // get current location
+        Item* matched_item = current_location->find_item(user_input);  // find item in current location
                 
-        if (matched_item) {
-            float new_weight = player.get_weight() + matched_item->get_weight();
-            if (new_weight > 30.0f) { 
+        if (matched_item) {  // if item is found
+            float new_weight = player.get_weight() + matched_item->get_weight();  // calculate player weight
+            if (new_weight > 30.0f) {  // if exceeding weight limit
                 std::cout << "You are carrying too much weight to take " << matched_item->get_name() << "." << std::endl;
                 return;
             }
         
-            Item itemCopy = *matched_item;
+            Item itemCopy = *matched_item;  // copy of item
 
             current_location->remove_item(matched_item->get_name()); // Remove from location
             player.add_item_to_inventory(itemCopy); // Add to inventory
@@ -166,25 +139,25 @@ void Game::give(std::vector<std::string> target) {
                         }
                         item_name += word; // puts tokens into one string
                 }
-                for (char& c : item_name) c = std::tolower(c);
+                for (char& c : item_name) c = std::tolower(c);  // Convert to Compare
 
                 Location* current_location = player.get_current_location(); // get current location
-                Item* matched_item = player.find_item(item_name); // looks for item in current location
+                Item* matched_item = player.find_item(item_name); // find item in player inventory
                 
-                if (matched_item) {
-                        player.remove_item_from_inventory(matched_item->get_name());
-                        current_location->add_item(*matched_item);
-                        player.add_weight(-matched_item->get_weight());
+                if (matched_item) {  // if item in inventory
+                        player.remove_item_from_inventory(matched_item->get_name());  // remove item from inventory
+                        current_location->add_item(*matched_item);  // add item to location
+                        player.add_weight(-matched_item->get_weight());  // subtract item weight from player weight
                         std::cout << "You put the " << matched_item->get_name() << " in " << current_location->get_name() << std::endl;
 
-                        if (current_location->get_name() == "The Forest") {
-                                if (matched_item->edible()) {
-                                        current_location->remove_item(matched_item->get_name());
-                                        required_calories -= matched_item->get_calories();
+                        if (current_location->get_name() == "The Forest") {  // if in the forest
+                                if (matched_item->edible()) {  // if item is edible
+                                        current_location->remove_item(matched_item->get_name());  // remove item from location
+                                        required_calories -= matched_item->get_calories();  // subtract item cal from total cal
                                         std::cout << "You gave the elf " << matched_item->get_name() << "! Calories left: " << required_calories << std::endl;
-                                } else {
-                                        Location* new_location = random_location();
-                                        player.set_current_location(new_location);
+                                } else {  // item inedible
+                                        Location* new_location = random_location(); // get new location
+                                        player.set_current_location(new_location);  // set player location to new location
                                         std::cout << "The elf is pissed off. He sent you to " << new_location->get_name() << std::endl;
                                 }
                         }
@@ -367,7 +340,7 @@ void Game::trade(std::vector<std::string> target) {
 
 void Game::dance(std::vector<std::string> args) {
         std::srand(std::time(0)); // randomize seed based on time
-        std::vector<std::string> dances = {
+        std::vector<std::string> dances = {  // vector of dances
                 "hitting the dougie",
                 "doing the cha-cha slide",
                 "doing the perculator",
@@ -382,10 +355,10 @@ void Game::dance(std::vector<std::string> args) {
                 "doing the floss"
         };
 
-        int random_dance = std::rand() % dances.size(); // select random dance in dances
-        std::string dance_picked = dances[random_dance]; // store random dance chosen
+        int random_dance = std::rand() % dances.size();  // select random dance in dances
+        std::string dance_picked = dances[random_dance];  // store random dance chosen
 
-        std::vector<std::string> responses = {
+        std::vector<std::string> responses = {  // vector of npc responses
                 "judged you",
                 "joined in",
                 "laughed",
@@ -394,14 +367,14 @@ void Game::dance(std::vector<std::string> args) {
                 "starting cheering"
         };
 
-        int random_response = std::rand() % responses.size(); // select random npc response
-        std::string response_picked = responses[random_response]; // store random response chosen
+        int random_response = std::rand() % responses.size();  // select random npc response
+        std::string response_picked = responses[random_response];  // store random response chosen
 
-        Location* current_location = player.get_current_location(); // get current location
-        const std::vector<NPC*>& npcs = current_location->get_npcs(); // get npcs in location
+        Location* current_location = player.get_current_location();  // get current location
+        const std::vector<NPC*>& npcs = current_location->get_npcs();  // get npcs in location
 
-        int random_npc = std::rand() % npcs.size(); // select random npc in location
-        const NPC& npc = *npcs[random_npc]; // get reference to npc chosen
+        int random_npc = std::rand() % npcs.size();  // select random npc in location
+        const NPC& npc = *npcs[random_npc];  // get reference to npc chosen
 
         std::cout << "You are " << dance_picked << " in " << current_location->get_name() << ", " << npc.get_name() << " " << response_picked << std::endl;
 }
@@ -705,7 +678,7 @@ void Game::game_loop() {
 
 
 Location* Game::random_location() {
-        std::srand(time(0));
-        int index = std::rand() % locations.size();
-        return &locations[index];
+        std::srand(time(0));  // randomize seed based on time
+        int index = std::rand() % locations.size();  // random number in range of locations
+        return &locations[index];  // return new location
 }

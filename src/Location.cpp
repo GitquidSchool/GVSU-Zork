@@ -1,6 +1,10 @@
 #include "Location.h"
 #include <stdexcept>
 
+/**
+ * Ethan Umana: 3/2/2025
+ */
+
 // Constructor for the Location class
 Location::Location(std::string name, std::string description) {
     // Check if the name or description is empty and throw an exception if they are
@@ -116,38 +120,38 @@ NPC* Location::find_npc(const std::string& name) {
 
 // finds items in current location
 Item* Location::find_item(const std::string& name) {
-    Item* bestMatch = nullptr;
+    Item* best_match = nullptr;
 
     for (auto& item : items) { // Iterate through items
-        std::string itemNameLower = item.get_name();
-        for (char& c : itemNameLower) c = std::tolower(c);
+        std::string item_name_lower = item.get_name();
+        for (char& c : item_name_lower) c = std::tolower(c);
 
-        std::string searchLower = name;
-        for (char& c : searchLower) c = std::tolower(c);
+        std::string search_lower = name;
+        for (char& c : search_lower) c = std::tolower(c);
 
-        if (itemNameLower.rfind(searchLower, 0) == 0) { 
+        if (item_name_lower.rfind(search_lower, 0) == 0) { 
             return &item; // return prefix match
         }
 
         // Store first partial but keep looking for exact
-        if (itemNameLower.find(searchLower) != std::string::npos && !bestMatch) {
-            bestMatch = &item;
+        if (item_name_lower.find(search_lower) != std::string::npos && !best_match) {
+            best_match = &item;
         }
     }
 
-    return bestMatch; //  Return best match (exact first, partial if no exact match)
+    return best_match; //  Return best match (exact first, partial if no exact match)
 }
 
 // removes item from current location
 void Location::remove_item(const std::string& name) {
     for (auto iterate = items.begin(); iterate != items.end(); ) { // Iterate through items
-        std::string itemNameLower = iterate->get_name();
-        for (char& c : itemNameLower) c = std::tolower(c);
+        std::string item_name_lower = iterate->get_name();
+        for (char& c : item_name_lower) c = std::tolower(c);
 
-        std::string searchLower = name;
-        for (char& c : searchLower) c = std::tolower(c);
+        std::string search_lower = name;
+        for (char& c : search_lower) c = std::tolower(c);
 
-        if (itemNameLower == searchLower) { // Ensure match before removing
+        if (item_name_lower == search_lower) { // Ensure match before removing
             iterate = items.erase(iterate); 
             return;  // Stop after removing match
         } else {
