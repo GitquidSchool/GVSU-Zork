@@ -3,6 +3,7 @@
 
 /**
  * Ethan Umana: 3/2/2025
+ * Vincent Nguyen: 3/2/2025
  */
 
 Player::Player() : current_location(nullptr), carried_weight(0.0f) {} 

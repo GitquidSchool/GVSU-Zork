@@ -3,6 +3,7 @@
 
 /**
  * Ethan Umana: 3/2/2025
+ * Vincent Nguyen: 3/2/2025
  */
 
 // Constructor for the Location class

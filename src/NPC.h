@@ -5,6 +5,11 @@
 #include <string>
 #include <vector>
 
+/**
+ * Ethan Umana: 3/2/2025
+ * Vincent Nguyen: 3/2/2025
+ */
+
 class NPC {
 private:
     std::string name;

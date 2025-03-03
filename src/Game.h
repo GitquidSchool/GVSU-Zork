@@ -8,6 +8,11 @@
 #include "Location.h"
 #include "Player.h"
 
+/**
+ * Ethan Umana: 3/2/2025
+ * Vincent Nguyen: 3/2/2025
+ */
+
 class Game {
 private:
     Player player;

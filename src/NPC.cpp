@@ -2,6 +2,7 @@
 
 /**
  * Ethan Umana: 3/2/2025
+ * Vincent Nguyen: 3/2/2025
  */
 
 // Constructor for the NPC class
@@ -21,12 +22,12 @@ std::string NPC::get_description() const {
 
 // Returns next message in list of messages
 // If no messages, returns default
-std::string NPC::talk() {
-    if (messages.empty()) return name + " remains silent."; // Check if no messages
-    std::string msg = messages[message_index]; // Get current messages
-    message_index = (message_index + 1) % messages.size(); // Move next messages, loops back to start
-    return msg; 
-}
+// std::string NPC::talk() {
+//     if (messages.empty()) return name + " remains silent."; // Check if no messages
+//     std::string msg = messages[message_index]; // Get current messages
+//     message_index = (message_index + 1) % messages.size(); // Move next messages, loops back to start
+//     return msg; 
+// }
 
 void NPC::set_trade(const std::string& wanted, Item reward) {
     wanted_item = wanted;

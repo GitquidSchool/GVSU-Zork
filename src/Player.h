@@ -5,6 +5,11 @@
 #include <vector>
 #include "Item.h"
 
+/**
+ * Ethan Umana: 3/2/2025
+ * Vincent Nguyen: 3/2/2025
+ */
+
 class Player {
 private:
     Location* current_location;

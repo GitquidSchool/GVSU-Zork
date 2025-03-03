@@ -4,9 +4,11 @@
 #include <cstdlib>
 #include <sstream>
 #include <limits>
+#include <set>
 
 /**
  * Ethan Umana: 3/2/2025
+ * Vincent Nguyen: 3/2/2025
  */
 
 Game::Game() : required_calories(500), in_progress(true) {
@@ -180,6 +182,12 @@ void Game::go(std::vector<std::string> target) {
 
         std::string directionLower = direction;
         for(char& c : directionLower) c = std::tolower(c);
+
+        std::set<std::string> validDirections = {"north", "south", "east", "west"};
+        if (validDirections.find(directionLower) == validDirections.end()) {
+            std::cout << "\"" << direction << "\" is not a valid direction." << std::endl;
+            return;
+         }
 
         current_location->set_visited(); // mark current visited
 
@@ -410,6 +418,7 @@ void Game::create_world() {
         // =============================
         // 2. Define NPCs
         // =============================
+        // Commons
         NPC* stanley = new NPC("Stanley the Overworked Cashier","A tired student worker who barely acknowledges customers.",
                 {"Next in line please.",
                 "Swipe your ID.",
@@ -419,6 +428,8 @@ void Game::create_world() {
                 "That lasagna took hours. You better appreciate it.",
                 "Take all you want, but don't waste it."});
 
+
+        // Field House
         NPC* anderson = new NPC("Anderson the Coach","A lunatic coach who spends most of his time yelling at players.",
                 {"Hustle up!",
                 "You're only as good as your last play!",
@@ -428,6 +439,7 @@ void Game::create_world() {
                 "Hydration is key—did you drink enough water today?",
                 "Just one more rep! You got this!"});
         
+        // Recreation Center
         NPC* milo = new NPC("Milo the Equipment Tinkerer", "A student always fixing gym equipment, convinced the machines have hidden secrets.",
                 {"The weights whisper when no one's looking.", 
                 "These machines are plotting something big.", 
@@ -437,6 +449,7 @@ void Game::create_world() {
                 "Every stale cookie tells a story of endurance.", 
                 "Remember, sometimes the best workout is a thoughtful pause for a snack."});
 
+        // Mackinac Hall
         NPC* lana = new NPC("Lana the Lounge Lurker", "A student who's always lounging around campus, avoiding class with a new excuse.",
                 {"Nap studies should be a real major.", 
                 "Procrastination is an art form.", 
@@ -446,11 +459,13 @@ void Game::create_world() {
                 "Here's the library... I think.", 
                 "Best pizza is... somewhere around here."});
 
+        // Lake Michigan Hall        
         NPC* james = new NPC("James the Forever Student", "James has been here for at least a decade, switching majors every couple years.",
                 {"Oh, you're new? I was new... like 12 years ago.", 
                 "Thinking of switching to Classics. Or Biology. Or both.", 
                 "I have enough credits to graduate, but what's the rush?"});
         
+        // Kindschi Hall
         NPC* lenz = new NPC("Lenz the Over-Caffeinated Professor", "Runs purely on espresso and questionable enthusiasm. Speaks at 2x speed.",
                 {"Science waits for no one—except grant funding.", 
                 "Ask questions! Just not during my coffee break.", 
@@ -460,6 +475,7 @@ void Game::create_world() {
                 "If I leave now, I'll ruin my no-sunlight streak.", 
                 "I made soap again instead of my experiment..."});
         
+        // Manitou Hall
         NPC* greg = new NPC("Greg the Over-Dramatic Student", "A business major who always has a dramatic story to tell.",
                 {"One more email and I'll explode!", 
                 "My coffee's cold. Today is doomed.", 
@@ -469,6 +485,7 @@ void Game::create_world() {
                 "The bookstore cat understands me.", 
                 "You should read this… unless you prefer textbooks!"});
 
+        // Padnos Hall
         NPC* spencer = new NPC("Spencer the Self-Proclaimed Artist", "A biology major who spends all his free time painting random objects around the building.",
                 {"This beaker is my masterpiece.", 
                 "It's not just a chair, it's the chair of despair.", 
@@ -477,7 +494,8 @@ void Game::create_world() {
                 {"4 lines of Python can automate your life!", 
                 "I'm making an app—Uber for homework.", 
                 "Still using that phone? Let me show you how to root it!"});
-
+        
+        // Kirkoff Center
         NPC* matt = new NPC("Matt the Walking Calendar", "Knows every event happening on campus.",
                 {"Join the meeting—I got the day planned!", 
                 "I should make a Google Calendar for my Google Calendar.", 
@@ -487,6 +505,7 @@ void Game::create_world() {
                 "The answer is obviously C—are we all clear?!?", 
                 "Can't focus, I'm too excited for finals!"});
 
+        // The Forest
         NPC* bernard = new NPC("Bernard the Watchful", "An all-powerful elf with an enormous appetite.",
                 {"Have you gathered enough food yet?",
                 "The school's survival depends on your success. Keep searching!",
@@ -495,6 +514,8 @@ void Game::create_world() {
         // =============================
         // 3. Define Items
         // =============================
+        // trade items (wanted items, reward items)
+
         Item clearCup("Clear Plastic Cup", "A sturdy plastic cup with some residue left inside.", 0, 1.5); 
         Item sodaCan("Unbranded Soda Can", "A full can of soda with the branding rubbed away.", 20, 1.0);
         marla->set_trade("Clear Plastic Cup", sodaCan);
@@ -505,12 +526,14 @@ void Game::create_world() {
         Item banana("Banana", "A ripe banana, slightly bruised but still good to eat.", 35, 0.5);
         Item trailMix("Bag of Trail Mix", "A small, resealable bag of trail mix filled with nuts and dried fruit.", 45, 1.5);
         Item proteinPowder("Box of Protein Powder", "A box of protein powder, half-open and empty.", 0, 3.0);
+        Item proteinShake("Protein Shake", "A mostly finished protein shake", 20, 1.0);
+        chloe->set_trade("Box of Protein Powder", proteinShake);
 
         Item staleCookie("Stale Protein Cookie", "An enormous stale cookie that has hardened over time.", 10, 1.0);
         Item yogurtCup("Diet Yogurt Cup", "A large cup of fat-free, low-calorie yogurt from the snack machine.", 15, 1.5);
         Item weightPlate("Rusted Weight Plate", "A heavily rusted weight plate, its surface pitted and corroded from years of neglect.", 0, 5.0);
         Item proteinBar("Large Protein Bar", "A protein bar that's been crushed in a backpack.", 30, 1.0);
-        //milo->set_trade("Rusted Weight Plate", proteinBar);
+        milo->set_trade("Rusted Weight Plate", proteinBar);
 
         Item textbook("Dusty Textbook", "An old textbook filled with scribbled notes from past classes.", 0, 3.0);
         Item smushedMuffin("Smushed Muffin", "A muffin that's been squished in a backpack for far too long.", 35, 2.0);
@@ -523,6 +546,10 @@ void Game::create_world() {
         Item safetyGoggles("Crushed Safety Goggles", "Clearly failed their last experiment. Now they sit here, a tragic reminder.", 0, 1.5);
         Item bunsenTubing("Burnt-Out Bunsen Burner Tubing", "Someone turned the gas up way too high. Now it's just a melted mess.", 0, 2.5);
         Item labCoat("Abandoned Lab Coat", "Slightly singed. Smells like chemicals. Probably left behind for a reason.", 0, 2.0);
+        Item rockCandy("Lab-Grown Rock Candy", "A large piece of rock candy, perfect for a sweet tooth.", 20, 1.0);
+        Item gelatin("Gelatinous Blob", "A wobbly blob of gelatin, left behind from a lab.", 10, 0.5);
+        lenz->set_trade("Abandoned Lab Coat", rockCandy);
+        sam->set_trade("Half-Used Lab Notebook", gelatin);
 
         Item staleBagel("Stale Bagel", "Hard as a rock, but still has a faint bagel flavor if you squint really hard.", 15, 1.5);
         Item backpack("Scuffed Leather Backpack", "Well-worn but still functional. Looks like someone gave up and left this behind.", 0, 4.0);
@@ -537,6 +564,11 @@ void Game::create_world() {
         Item stickyNotes("Sticky Note Pad", "Mostly empty, with a few motivational quotes from a stressed-out student.", 0, 0.5);
         Item pandaEntree("Half-Eaten Panda Express Entree", "Someone left this on a table, but it's a mystery how much of it is still edible.", 35, 1.0);
         Item studyGuide("Forgotten Study Guide", "It was supposed to be a lifesaver for your final exam.", 0, 1.5);
+        Item ramenPacket("Instant Ramen Packet", "A single packet of instant ramen, perfect for a quick meal.", 25, 1.0);
+        lily->set_trade("Forgotten Study Guide", ramenPacket);
+        
+        Item testItem("Test Item", "A test item for trading.", 30, 30.0);
+        bernard->set_trade("Energy Bar", testItem);
 
 
         // =============================
@@ -669,9 +701,10 @@ void Game::game_loop() {
         } else {
             std::cout << "Invalid command. Type 'help' for available commands." << std::endl;
         }
-        if (required_calories < 0) {
-                std::cout << "You have saved GVSU!";
+        if (required_calories <= 0) {
+                std::cout << "\nCongratulations! You have satisfied Bernard and he saves GVSU!" << std::endl;
                 in_progress = false;
+                return;
         }
     }
 }

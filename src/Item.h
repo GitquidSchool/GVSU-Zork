@@ -5,6 +5,11 @@
 #include <iostream> 
 #include <stdexcept> 
 
+/**
+ * Ethan Umana: 3/2/2025
+ * Vincent Nguyen: 3/2/2025
+ */
+
 class Item {
 private:
     std::string name;           // Name (cannot be empty)
