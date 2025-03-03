@@ -567,10 +567,6 @@ void Game::create_world() {
         Item ramenPacket("Instant Ramen Packet", "A single packet of instant ramen, perfect for a quick meal.", 25, 1.0);
         lily->set_trade("Forgotten Study Guide", ramenPacket);
         
-        Item testItem("Test Item", "A test item for trading.", 30, 30.0);
-        bernard->set_trade("Energy Bar", testItem);
-
-
         // =============================
         // 4. Assign Items & NPCs to Locations
         // =============================
