@@ -115,13 +115,13 @@ void Game::take(std::vector<std::string> target) {
                 return;
             }
         
-            Item itemCopy = *matched_item;  // copy of item
+            Item item_copy = *matched_item;  // copy of item
 
             current_location->remove_item(matched_item->get_name()); // Remove from location
-            player.add_item_to_inventory(itemCopy); // Add to inventory
-            player.add_weight(itemCopy.get_weight()); // Update weight
+            player.add_item_to_inventory(item_copy); // Add to inventory
+            player.add_weight(item_copy.get_weight()); // Update weight
         
-            std::cout << "You took the " << itemCopy.get_name() << "." << std::endl;
+            std::cout << "You took the " << item_copy.get_name() << "." << std::endl;
         } else {
                 std::cout << user_input << " is not in this location." << std::endl;
         }
@@ -143,18 +143,18 @@ void Game::give(std::vector<std::string> target) {
 
                 Location* current_location = player.get_current_location(); // get current location
                 Item* matched_item = player.find_item(item_name); // find item in player inventory
-                
-                if (matched_item) {  // if item in inventory
-                        player.remove_item_from_inventory(matched_item->get_name());  // remove item from inventory
-                        current_location->add_item(*matched_item);  // add item to location
-                        player.add_weight(-matched_item->get_weight());  // subtract item weight from player weight
-                        std::cout << "You put the " << matched_item->get_name() << " in " << current_location->get_name() << std::endl;
 
+                if (matched_item) {  // if item in inventory
+                        Item item_copy = *matched_item;  // copy of item
+                        player.remove_item_from_inventory(matched_item->get_name());  // remove item from inventory
+                        current_location->add_item(item_copy);  // add item to location
+                        player.add_weight(-item_copy.get_weight());  // subtract item weight from player weight
+                        std::cout << "You put the " << item_copy.get_name() << " in " << current_location->get_name() << std::endl;
                         if (current_location->get_name() == "The Forest") {  // if in the forest
-                                if (matched_item->edible()) {  // if item is edible
-                                        current_location->remove_item(matched_item->get_name());  // remove item from location
-                                        required_calories -= matched_item->get_calories();  // subtract item cal from total cal
-                                        std::cout << "You gave the elf " << matched_item->get_name() << "! Calories left: " << required_calories << std::endl;
+                                if (item_copy.edible()) {  // if item is edible
+                                        required_calories -= item_copy.get_calories();  // subtract item cal from total cal
+                                        current_location->remove_item(item_copy.get_name());  // remove item from location
+                                        std::cout << "You gave the elf " << item_name << "! Calories left: " << required_calories << std::endl;
                                 } else {  // item inedible
                                         Location* new_location = random_location(); // get new location
                                         player.set_current_location(new_location);  // set player location to new location
