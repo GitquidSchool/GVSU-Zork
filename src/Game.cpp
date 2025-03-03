@@ -172,16 +172,16 @@ void Game::give(std::vector<std::string> target) {
                 Item* matched_item = player.find_item(item_name); // looks for item in current location
                 
                 if (matched_item) {
-                        player.remove_item(item_name);
-                        current_location ->add_item(*matched_item);
+                        player.remove_item_from_inventory(matched_item->get_name());
+                        current_location->add_item(*matched_item);
                         player.add_weight(-matched_item->get_weight());
-                        std::cout << "You put the " << item_name << " in " << current_location->get_name() << std::endl;
+                        std::cout << "You put the " << matched_item->get_name() << " in " << current_location->get_name() << std::endl;
 
                         if (current_location->get_name() == "The Forest") {
                                 if (matched_item->edible()) {
-                                        current_location ->remove_item(matched_item->get_name());
+                                        current_location->remove_item(matched_item->get_name());
                                         required_calories -= matched_item->get_calories();
-                                        std::cout << "You gave the elf " << item_name << "! Calories left: " << required_calories << std::endl;
+                                        std::cout << "You gave the elf " << matched_item->get_name() << "! Calories left: " << required_calories << std::endl;
                                 } else {
                                         Location* new_location = random_location();
                                         player.set_current_location(new_location);
@@ -354,7 +354,7 @@ void Game::trade(std::vector<std::string> target) {
 
         std::string rewardName = reward.get_name();
         std::string tradedItem = playerItem->get_name();
-        player.remove_item(playerItem->get_name()); // Remove Item for trade
+        player.remove_item_from_inventory(playerItem->get_name()); // Remove Item for trade
         player.add_weight(-playerItem->get_weight()); // Update player weight after remove
         player.add_item_to_inventory(reward); // Add reward to player
         player.add_weight(reward.get_weight()); // Update weight of reward
@@ -366,7 +366,7 @@ void Game::trade(std::vector<std::string> target) {
 }
 
 void Game::dance(std::vector<std::string> args) {
-        std::srand(std::time(0));
+        std::srand(std::time(0)); // randomize seed based on time
         std::vector<std::string> dances = {
                 "hitting the dougie",
                 "doing the cha-cha slide",
@@ -695,6 +695,10 @@ void Game::game_loop() {
             commands[command](tokens);
         } else {
             std::cout << "Invalid command. Type 'help' for available commands." << std::endl;
+        }
+        if (required_calories < 0) {
+                std::cout << "You have saved GVSU!";
+                in_progress = false;
         }
     }
 }

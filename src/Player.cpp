@@ -58,13 +58,13 @@ void Player::add_weight(float weight) {
     carried_weight += weight;
 }
 
-void Player::remove_item(const std::string& name) {
+void Player::remove_item_from_inventory(const std::string& name) {
     for (auto iterate = inventory.begin(); iterate != inventory.end();) {
         std::string item_name_lower = iterate->get_name();
         for (char& c : item_name_lower) c = std::tolower(c);
         
         std::string search_lower = name;
-        for (char& c : item_name_lower) c = std::tolower(c);
+        for (char& c : search_lower) c = std::tolower(c);
 
         if (item_name_lower == search_lower) {
             iterate = inventory.erase(iterate);
